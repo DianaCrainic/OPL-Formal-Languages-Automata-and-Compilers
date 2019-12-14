@@ -6,17 +6,24 @@
 
 "/*"(.|\n)+"*/" ;
 
-"int" {return INT;}
-"float" {return FLOAT;}
-"char" {return CHAR;}
-"string" {return STRING;}
-"bool" {return BOOL;}
+int {return INT;}
+float {return FLOAT;}
+char {return CHAR;}
+string {return STRING;}
+bool {return BOOL;}
 
-[A-Za-z][A-Za-z0-9]* {return ID;}
+begin_declarations {return BEGIN_DECL;}
+end_declarations {return END_DECL;}
+begin_main {return BEGIN_MAIN;}
+end_main {return END_MAIN;}
+
+([-+][1-9][0-9]*)|0 {return INTEGER_NUMBER;}
 [1-9][0-9]*|0 {return UNSIGNED_NUMBER;}
 ([1-9][0-9]*\.[0-9]+)|(0\.[0-9]+) {return FLOAT_NUMBER;}
+(true)|(false) {return BOOL_VALUE;}
 \"[^\"]+\" {return STRING_VALUE;}
-"true"|"false" {return BOOL_VALUE;}
+\'.\' {return CHAR_VALUE;}
+[A-Za-z][A-Za-z0-9]* {return ID;}
 
 [ \t] ;
 \n {++yylineno;}

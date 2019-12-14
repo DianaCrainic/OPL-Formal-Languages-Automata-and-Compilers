@@ -1,0 +1,19 @@
+begin_declarations
+
+int a = 2;
+char b = 'a';
+string d = "abc";
+bool a = false;
+int a[20] = {-1, 2, 2.5};
+
+end_declarations
+
+
+
+begin_main
+
+a = b;
+c[2] = -3;
+d = "abc";
+
+end_main
