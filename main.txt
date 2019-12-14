@@ -5,6 +5,7 @@ char b = 'a';
 string d = "abc";
 bool a = false;
 int a[20] = {-1, 2, 2.5};
+const int a = 2;
 
 end_declarations
 

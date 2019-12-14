@@ -11,6 +11,7 @@ float {return FLOAT;}
 char {return CHAR;}
 string {return STRING;}
 bool {return BOOL;}
+const {return CONST;}
 
 begin_declarations {return BEGIN_DECL;}
 end_declarations {return END_DECL;}

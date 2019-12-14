@@ -4,7 +4,7 @@ extern FILE* yyin;
 extern int yylineno;
 %}
 
-%token INT FLOAT CHAR STRING BOOL
+%token INT FLOAT CHAR STRING BOOL CONST
 	   BEGIN_DECL END_DECL BEGIN_MAIN END_MAIN
 	   ID 
 	   UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
@@ -37,12 +37,18 @@ var_decl: type ID
 		| type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
         ;
 
-type: INT
-    | FLOAT
-    | CHAR
-    | STRING
-    | BOOL
+type: subtype maintype
     ;
+
+subtype:
+       | CONST 
+
+maintype: INT
+    	| FLOAT
+    	| CHAR
+    	| STRING
+    	| BOOL
+    	;
 
 value: INTEGER_NUMBER
      | UNSIGNED_NUMBER

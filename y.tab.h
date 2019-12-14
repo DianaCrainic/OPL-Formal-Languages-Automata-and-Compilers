@@ -50,17 +50,18 @@ extern int yydebug;
     CHAR = 260,
     STRING = 261,
     BOOL = 262,
-    BEGIN_DECL = 263,
-    END_DECL = 264,
-    BEGIN_MAIN = 265,
-    END_MAIN = 266,
-    ID = 267,
-    UNSIGNED_NUMBER = 268,
-    INTEGER_NUMBER = 269,
-    FLOAT_NUMBER = 270,
-    STRING_VALUE = 271,
-    BOOL_VALUE = 272,
-    CHAR_VALUE = 273
+    CONST = 263,
+    BEGIN_DECL = 264,
+    END_DECL = 265,
+    BEGIN_MAIN = 266,
+    END_MAIN = 267,
+    ID = 268,
+    UNSIGNED_NUMBER = 269,
+    INTEGER_NUMBER = 270,
+    FLOAT_NUMBER = 271,
+    STRING_VALUE = 272,
+    BOOL_VALUE = 273,
+    CHAR_VALUE = 274
   };
 #endif
 /* Tokens.  */
@@ -69,17 +70,18 @@ extern int yydebug;
 #define CHAR 260
 #define STRING 261
 #define BOOL 262
-#define BEGIN_DECL 263
-#define END_DECL 264
-#define BEGIN_MAIN 265
-#define END_MAIN 266
-#define ID 267
-#define UNSIGNED_NUMBER 268
-#define INTEGER_NUMBER 269
-#define FLOAT_NUMBER 270
-#define STRING_VALUE 271
-#define BOOL_VALUE 272
-#define CHAR_VALUE 273
+#define CONST 263
+#define BEGIN_DECL 264
+#define END_DECL 265
+#define BEGIN_MAIN 266
+#define END_MAIN 267
+#define ID 268
+#define UNSIGNED_NUMBER 269
+#define INTEGER_NUMBER 270
+#define FLOAT_NUMBER 271
+#define STRING_VALUE 272
+#define BOOL_VALUE 273
+#define CHAR_VALUE 274
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
