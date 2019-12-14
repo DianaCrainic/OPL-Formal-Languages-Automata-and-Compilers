@@ -5,3 +5,9 @@ build:
 
 run:
 	./opl main.txt
+
+remove:
+	rm -f y.tab.c
+	rm -f y.tab.h
+	rm -f opl
+	rm -f lex.yy.c

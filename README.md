@@ -2,7 +2,7 @@ Update-uri:
 
 v1(14.12.2019)
 
--config initial
+-config initial(cmake + yacc + lex + main + readme)
 
 -tipurile predefinite de date
 
