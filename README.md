@@ -11,3 +11,5 @@ v1(14.12.2019)
 -tablouri
 
 -delimitarea blocurilor de cod (declaratii de variabile + main)
+
+-functii (ramane de implementat apelarea functiilor)
