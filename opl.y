@@ -17,7 +17,7 @@ extern int yylineno;
 s: progr {printf("Input corect sintactic\n");}
  ;
 
-progr: declarations functions call_functions main
+progr: declarations functions main
      | main
      ;
 
