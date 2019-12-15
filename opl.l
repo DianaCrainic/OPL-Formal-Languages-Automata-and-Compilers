@@ -15,8 +15,13 @@ const {return CONST;}
 
 begin_declarations {return BEGIN_DECL;}
 end_declarations {return END_DECL;}
+begin_functions {return BEGIN_FNC;}
+end_functions {return END_FNC;}
 begin_main {return BEGIN_MAIN;}
 end_main {return END_MAIN;}
+
+"function" {return FNC;}
+"call" {return CALL;}
 
 [-+]([1-9][0-9]*|0) {return INTEGER_NUMBER;}
 [1-9][0-9]*|0 {return UNSIGNED_NUMBER;}

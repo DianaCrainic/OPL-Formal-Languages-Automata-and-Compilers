@@ -5,10 +5,11 @@ extern int yylineno;
 %}
 
 %token INT FLOAT CHAR STRING BOOL CONST
-	   BEGIN_DECL END_DECL BEGIN_MAIN END_MAIN
+	   BEGIN_DECL END_DECL BEGIN_FNC END_FNC BEGIN_MAIN END_MAIN
 	   ID 
 	   UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
 	   STRING_VALUE BOOL_VALUE CHAR_VALUE
+       FNC CALL
 %start s
 
 %%
@@ -16,7 +17,7 @@ extern int yylineno;
 s: progr {printf("Input corect sintactic\n");}
  ;
 
-progr: declarations main
+progr: declarations functions call_functions main
      | main
      ;
 
@@ -65,6 +66,61 @@ array: array_element
 array_element: ID
              | value
              ;
+
+
+
+
+functions : BEGIN_FNC list_functions END_FNC
+          ;
+
+list_functions: function list_functions
+              | function
+              ;
+
+function: FNC type ':' ID '(' content_function ')' ';'
+        ;
+
+content_function: variables
+                 |
+                 ;
+
+variables: var_decl ',' variables
+         | var_decl
+         ;
+
+ /* call_functions: call ';' call_functions
+              | call ';'
+
+call: ID '=' CALL FNC type ':' ID '(' list_parameters ')' ';'
+    ;
+
+list_parameters: param ',' list_parameters
+               | param
+               ;
+
+param: value
+     | ID
+     | arith_op
+     | '(' call ')'
+     |
+     ;
+
+arith_op: operand operator operand
+        | operand operator arith_op
+        ;
+
+operand: value
+       | ID
+       | '('call')'
+       ;
+
+operator : '+'
+         | '-'
+         | '*'
+         | '/'
+         ;
+
+ */
 
 main: BEGIN_MAIN main_content END_MAIN
     ;

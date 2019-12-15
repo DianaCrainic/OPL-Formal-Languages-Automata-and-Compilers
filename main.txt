@@ -10,6 +10,14 @@ const int a = 2;
 end_declarations
 
 
+begin_functions
+
+function int : example(int a, float b[10], char ch, bool e = true);
+function float : abc(float A, float B);
+function string : str(string z ="zzz");
+
+end_functions
+
 
 begin_main
 
