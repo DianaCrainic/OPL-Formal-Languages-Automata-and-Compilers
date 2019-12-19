@@ -43,7 +43,6 @@ end_classes
 
 
 
-
 begin_functions
 
 function int : example(int a, float b[10], char ch, bool e = true);
