@@ -7,12 +7,12 @@ bool a = false;
 int a[20] = {-1, 2, 2.5};
 const int a = 2;
 
-end_declarations
 
+function int : example(int a, float b[10], char ch, bool e = true);
+function float : abc(float A, float B);
+function string : str(string z ="zzz");
+function char : g();
 
-
-
-begin_classes
 
 class Example {
     public:
@@ -39,27 +39,9 @@ protected class test2 {
 }
 
 
-end_classes
+end_declarations
 
 
-
-begin_functions
-
-function int : example(int a, float b[10], char ch, bool e = true);
-function float : abc(float A, float B);
-function string : str(string z ="zzz");
-function char : g();
-
-end_functions
-
-
-begin_call
-
-a = call example(a,b,c);
-aux = call f(2.14, (v = call b(2*4, c) ));
-y = call ab(2 * d + (e = call l(1,2,d) ), b*c*(x = call v() ));
-
-end_call
 
 
 begin_main
@@ -67,5 +49,13 @@ begin_main
 a = b;
 c[2] = -3;
 d = "abc";
+
+
+a = call example(a,b,c);
+aux = call f(2.14, (v = call b(2*4, c) ));
+y = call ab(2 * d + (e = call l(1,2,d) ), b*c*(x = call v() ));
+
+
+
 
 end_main

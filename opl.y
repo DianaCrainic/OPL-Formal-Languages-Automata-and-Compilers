@@ -6,9 +6,6 @@ extern int yylineno;
 
 %token INT FLOAT CHAR STRING BOOL CONST
 	   BEGIN_DECL END_DECL 
-     BEGIN_FNC END_FNC 
-     BEGIN_CALL END_CALL 
-     BEGIN_CLASS END_CLASS 
      BEGIN_MAIN END_MAIN
 	   ID 
 	   UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
@@ -24,16 +21,19 @@ extern int yylineno;
 s: progr {printf("Input corect sintactic\n");}
  ;
 
-progr: declarations classes functions calls main
+progr: declarations main
      | main
      ;
 
 declarations: BEGIN_DECL declarations_content END_DECL
             ;
 
-declarations_content: decl 
-                    | decl declarations_content
-                    ;
+declarations_content : declaration_list functions classes 
+                     ;
+
+declaration_list: decl 
+                | decl declaration_list
+                ;
 
 decl: var_decl ';'
     ;
@@ -76,7 +76,7 @@ array_element: ID
              ;
 
 
-classes: BEGIN_CLASS class_list END_CLASS
+classes: class_list
        ;
 
 
@@ -129,7 +129,7 @@ ret_val: RET ';'
 
 
 
-functions: BEGIN_FNC functions_list END_FNC
+functions: functions_list
          ;
 
 functions_list: function functions_list
@@ -148,12 +148,30 @@ declarations_content: var_decl ',' declarations_content
                     ;
 
 
-calls: BEGIN_CALL calls_list END_CALL
-     ;
 
-calls_list: call ';' calls_list
-          | call ';'
-          ;
+
+main: BEGIN_MAIN main_content END_MAIN
+    ;
+
+
+main_content: assign_list call_list
+           ;
+
+assign_list : assign_list  assign
+            | assign 
+            ;
+
+assign: ID '=' ID ';'
+      | ID '=' value ';'
+      | ID '[' UNSIGNED_NUMBER ']' '=' value ';'
+      ;
+
+
+
+
+call_list: call ';' call_list
+         | call ';'
+         ; 
 
 call: ID '=' CALL ID'(' call_content ')'
     ;
@@ -186,20 +204,8 @@ operator : '+'
 
 
 
-main: BEGIN_MAIN main_content END_MAIN
-    ;
 
-main_content: instruction ';'
-            | instruction ';' main_content
-            ;
 
-instruction: assign
-           ;
-
-assign: ID '=' ID 
-      | ID '=' value
-      | ID '[' UNSIGNED_NUMBER ']' '=' value
-      ;
 
 %%
 
