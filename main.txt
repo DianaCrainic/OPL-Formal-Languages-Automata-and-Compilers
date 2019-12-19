@@ -43,7 +43,6 @@ end_declarations
 
 
 
-
 begin_main
 
 a = b;

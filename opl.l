@@ -3,7 +3,7 @@
 #include "y.tab.h"
 %}
 %%
-
+ 
 "/*"(.|\n)+"*/" ;
 
 int {return INT;}
