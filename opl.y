@@ -5,11 +5,11 @@ extern int yylineno;
 %}
 
 %token INT FLOAT CHAR STRING BOOL CONST
-	   BEGIN_DECL END_DECL BEGIN_FNC END_FNC BEGIN_MAIN END_MAIN
+	   BEGIN_DECL END_DECL BEGIN_FNC END_FNC BEGIN_CALL END_CALL BEGIN_MAIN END_MAIN
 	   ID 
 	   UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
 	   STRING_VALUE BOOL_VALUE CHAR_VALUE
-       FNC CALL
+     FNC CALL 
 %start s
 
 %%
@@ -17,7 +17,7 @@ extern int yylineno;
 s: progr {printf("Input corect sintactic\n");}
  ;
 
-progr: declarations functions main
+progr: declarations functions calls main
      | main
      ;
 
@@ -33,9 +33,9 @@ decl: var_decl ';'
 
 var_decl: type ID
         | type ID '=' value
-		| type ID '[' UNSIGNED_NUMBER ']'
-		| type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
-		| type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+		    | type ID '[' UNSIGNED_NUMBER ']'
+		    | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
+		    | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
         ;
 
 type: subtype maintype
@@ -43,13 +43,14 @@ type: subtype maintype
 
 subtype:
        | CONST 
+       ;
 
 maintype: INT
-    	| FLOAT
-    	| CHAR
-    	| STRING
-    	| BOOL
-    	;
+    	  | FLOAT
+    	  | CHAR
+    	  | STRING
+    	  | BOOL
+    	  ;
 
 value: INTEGER_NUMBER
      | UNSIGNED_NUMBER
@@ -68,35 +69,39 @@ array_element: ID
              ;
 
 
+functions: BEGIN_FNC functions_list END_FNC
+         ;
 
-
-functions : BEGIN_FNC list_functions END_FNC
-          ;
-
-list_functions: function list_functions
+functions_list: function functions_list
               | function
               ;
 
-function: FNC type ':' ID '(' content_function ')' ';'
+function: FNC type ':' ID '(' function_content ')' ';'
         ;
 
-content_function: variables
-                 |
-                 ;
+function_content: variables
+                |
+                ;
 
 variables: var_decl ',' variables
          | var_decl
          ;
 
- /* call_functions: call ';' call_functions
-              | call ';'
 
-call: ID '=' CALL FNC type ':' ID '(' list_parameters ')' ';'
+
+calls: BEGIN_CALL calls_list END_CALL
+     ;
+
+calls_list: call ';' calls_list
+          | call ';'
+          ;
+
+call: ID '=' CALL ID'(' call_content ')'
     ;
 
-list_parameters: param ',' list_parameters
-               | param
-               ;
+call_content: param ',' call_content
+            | param
+            ;
 
 param: value
      | ID
@@ -111,7 +116,7 @@ arith_op: operand operator operand
 
 operand: value
        | ID
-       | '('call')'
+       | '(' call ')'
        ;
 
 operator : '+'
@@ -120,7 +125,7 @@ operator : '+'
          | '/'
          ;
 
- */
+
 
 main: BEGIN_MAIN main_content END_MAIN
     ;

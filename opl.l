@@ -17,6 +17,8 @@ begin_declarations {return BEGIN_DECL;}
 end_declarations {return END_DECL;}
 begin_functions {return BEGIN_FNC;}
 end_functions {return END_FNC;}
+begin_call {return BEGIN_CALL;}
+end_call {return END_CALL;}
 begin_main {return BEGIN_MAIN;}
 end_main {return END_MAIN;}
 
