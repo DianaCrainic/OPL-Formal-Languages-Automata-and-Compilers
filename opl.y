@@ -10,8 +10,7 @@ extern int yylineno;
 	   ID 
 	   UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
 	   STRING_VALUE BOOL_VALUE CHAR_VALUE
-     FNC 
-     CALL 
+     FNC CALL 
      CLASS PUBLIC PRIVATE PROTECTED
      RET
 %start s
@@ -28,22 +27,21 @@ progr: declarations main
 declarations: BEGIN_DECL declarations_content END_DECL
             ;
 
-declarations_content : declaration_list functions classes 
-                     ;
+declarations_content: decl
+                    | decl declarations_content
+                    ;
 
-declaration_list: decl 
-                | decl declaration_list
-                ;
-
-decl: var_decl ';'
+decl: variable_decl ';'
+    | function_decl ';'
+    | class_decl
     ;
 
-var_decl: type ID
-        | type ID '=' value
-		    | type ID '[' UNSIGNED_NUMBER ']'
-		    | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
-		    | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
-        ;
+variable_decl: type ID
+             | type ID '=' value
+		         | type ID '[' UNSIGNED_NUMBER ']'
+		         | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
+		         | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+             ;
 
 type: subtype maintype
     ;
@@ -75,18 +73,9 @@ array_element: ID
              | value
              ;
 
-
-classes: class_list
-       ;
-
-
-class_list: class class_list
-          | class
+class_decl: segment CLASS ID '{' class_content '}'
+          | CLASS ID '{' class_content '}'
           ;
-
-class: segment CLASS ID '{' class_content '}'
-     | CLASS ID '{' class_content '}'
-     ;
 
 segment: PUBLIC
        | PRIVATE
@@ -98,97 +87,74 @@ class_content: segment ':' declarations_in_class segment ':' declarations_in_cla
              | segment ':' declarations_in_class
              ;
 
-declarations_in_class: decl_in_class declarations_in_class
-                     | decl_in_class
+declarations_in_class: decl_in_class ';' declarations_in_class
+                     | decl_in_class ';'
                      ;
 
-decl_in_class: var_decl_in_class ';'
+decl_in_class: variable_decl_in_class
+             | method_decl_in_class 
              ;
 
+variable_decl_in_class: type ID     
+                      | type ID '=' value
+                      | type ID '[' UNSIGNED_NUMBER ']'
+                      | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
+                      | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+                      ;
 
-var_decl_in_class: type ID     
-                 | type ID '=' value
-                 | type ID '[' UNSIGNED_NUMBER ']'
-                 | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
-                 | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
-                 | type ID fct
-                 | type ID fct_ret
-                 ;
-
-fct: '(' function_content ')'
-   ;
-
-fct_ret: fct '{' ret_val '}'
-       ;
-
-ret_val: RET ';'
-       | RET value ';'
-       | RET ID ';'
-       ;
-
-
-
-
-functions: functions_list
-         ;
-
-functions_list: function functions_list
-              | function
-              ;
-
-function: FNC type ':' ID '(' function_content ')' ';'
-        ;
-
-function_content: declarations_content
-                |
-                ;
-
-declarations_content: var_decl ',' declarations_content
-                    | var_decl
+method_decl_in_class: type ID '(' function_param ')'
+                    | type ID '(' function_param ')' '{' return_value '}'
                     ;
 
+function_param: 
+              | list_of_param
+              ;
 
+list_of_param: variable_decl
+             | variable_decl ',' list_of_param
+             ;
 
+return_value: RET ';'
+            | RET value ';'
+            | RET ID ';'
+            ;
+
+function_decl: FNC type ':' ID '(' function_param ')'
+             ;
 
 main: BEGIN_MAIN main_content END_MAIN
     ;
 
-
-main_content: assign_list call_list
-           ;
-
-assign_list : assign_list  assign
-            | assign 
+main_content: statement ';'
+            | statement ';' main_content
             ;
 
-assign: ID '=' ID ';'
-      | ID '=' value ';'
-      | ID '[' UNSIGNED_NUMBER ']' '=' value ';'
+statement: assign
+         | call
+         ;
+
+assign: ID '=' ID
+      | ID '=' value
+      | ID '[' UNSIGNED_NUMBER ']' '=' value
       ;
 
-
-
-call_list: call ';' call_list
-         | call ';'
-         ; 
-
-call: ID '=' CALL ID'(' call_content ')'
+call: ID '=' CALL ID '(' call_param ')'
     ;
 
-call_content: param ',' call_content
-            | param
-            ;
+call_param: param ',' call_param
+          | param
+          ;
 
 param: value
      | ID
-     | arith_op
+     | arithmetic_expression
      | '(' call ')'
      |
      ;
 
-arith_op: operand operator operand
-        | operand operator arith_op
-        ;
+arithmetic_expression: operand operator operand
+                     | operand operator arithmetic_expression
+                     ;
 
 operand: value
        | ID
@@ -200,11 +166,6 @@ operator : '+'
          | '*'
          | '/'
          ;
-
-
-
-
-
 
 %%
 

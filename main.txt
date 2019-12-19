@@ -1,18 +1,10 @@
 begin_declarations
 
 int a = 2;
+function int : example(int a, float b[10], char ch, bool e = true);
 char b = 'a';
 string d = "abc";
 bool a = false;
-int a[20] = {-1, 2, 2.5};
-const int a = 2;
-
-
-function int : example(int a, float b[10], char ch, bool e = true);
-function float : abc(float A, float B);
-function string : str(string z ="zzz");
-function char : g();
-
 
 class Example {
     public:
@@ -24,6 +16,13 @@ class Example {
 	private:
 		int abc(float b[12], char c);
 }
+
+int a[20] = {-1, 2, 2.5};
+const int a = 2;
+
+
+function float : abc(float A, float B);
+function string : str(string z ="zzz");
 
 class Test {
 	public:
@@ -38,6 +37,8 @@ protected class test2 {
 		float a = 12.7;
 }
 
+function char : g();
+
 
 end_declarations
 
@@ -47,14 +48,13 @@ begin_main
 
 a = b;
 c[2] = -3;
-d = "abc";
 
 
 a = call example(a,b,c);
-aux = call f(2.14, (v = call b(2*4, c) ));
 y = call ab(2 * d + (e = call l(1,2,d) ), b*c*(x = call v() ));
 
+d = "abc";
 
-
+aux = call f(2.14, (v = call b(2*4, c) ));
 
 end_main
