@@ -5,11 +5,18 @@ extern int yylineno;
 %}
 
 %token INT FLOAT CHAR STRING BOOL CONST
-	   BEGIN_DECL END_DECL BEGIN_FNC END_FNC BEGIN_CALL END_CALL BEGIN_MAIN END_MAIN
+	   BEGIN_DECL END_DECL 
+     BEGIN_FNC END_FNC 
+     BEGIN_CALL END_CALL 
+     BEGIN_CLASS END_CLASS 
+     BEGIN_MAIN END_MAIN
 	   ID 
 	   UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
 	   STRING_VALUE BOOL_VALUE CHAR_VALUE
-     FNC CALL 
+     FNC 
+     CALL 
+     CLASS PUBLIC PRIVATE PROTECTED
+     RET
 %start s
 
 %%
@@ -17,7 +24,7 @@ extern int yylineno;
 s: progr {printf("Input corect sintactic\n");}
  ;
 
-progr: declarations functions calls main
+progr: declarations classes functions calls main
      | main
      ;
 
@@ -69,6 +76,62 @@ array_element: ID
              ;
 
 
+
+classes: BEGIN_CLASS class_list END_CLASS
+       ;
+
+
+class_list: class class_list
+          | class
+          ;
+
+class: segment CLASS ID '{' class_content '}'
+     | CLASS ID '{' class_content '}'
+     ;
+
+segment: PUBLIC
+       | PRIVATE
+       | PROTECTED
+       ;
+
+class_content: segment ':' declarations_in_class segment ':' declarations_in_class segment ':' declarations_in_class
+             | segment ':' declarations_in_class segment ':' declarations_in_class
+             | segment ':' declarations_in_class
+             ;
+
+declarations_in_class: decl_in_class declarations_in_class
+                     | decl_in_class
+                     ;
+
+decl_in_class: var_decl_in_class ';'
+             ;
+
+
+var_decl_in_class: type ID     
+                 | type ID '=' value
+                 | type ID '[' UNSIGNED_NUMBER ']'
+                 | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
+                 | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+                 | type ID fct
+                 | type ID fct_ret
+                 ;
+
+fct: '(' function_content ')'
+   ;
+
+fct_ret: fct '{' ret_val '}'
+       ;
+
+ret_val: RET ';'
+       | RET value ';'
+       | RET ID ';'
+       ;
+
+
+
+
+
+
 functions: BEGIN_FNC functions_list END_FNC
          ;
 
@@ -79,14 +142,13 @@ functions_list: function functions_list
 function: FNC type ':' ID '(' function_content ')' ';'
         ;
 
-function_content: variables
+function_content: declarations_content
                 |
                 ;
 
-variables: var_decl ',' variables
-         | var_decl
-         ;
-
+declarations_content: var_decl ',' declarations_content
+                    | var_decl
+                    ;
 
 
 calls: BEGIN_CALL calls_list END_CALL

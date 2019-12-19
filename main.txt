@@ -10,6 +10,40 @@ const int a = 2;
 end_declarations
 
 
+
+
+begin_classes
+
+class Example {
+    public:
+		int a1 = 13;
+		float a2[10];
+	protected:
+		char proc(int a){return 1;};
+		float p1(){return a;};
+	private:
+		int abc(float b[12], char c);
+}
+
+class Test {
+	public:
+		int a1;
+		char a2[10];
+	private:
+		int abc(){return abc;};
+}
+
+protected class test2 {
+	protected:
+		float a = 12.7;
+}
+
+
+end_classes
+
+
+
+
 begin_functions
 
 function int : example(int a, float b[10], char ch, bool e = true);
