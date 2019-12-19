@@ -73,6 +73,17 @@ array_element: ID
              | value
              ;
 
+function_decl: FNC type ':' ID '(' function_param ')'
+             ;
+
+function_param: 
+              | list_of_param
+              ;
+
+list_of_param: variable_decl
+             | variable_decl ',' list_of_param
+             ;
+
 class_decl: segment CLASS ID '{' class_content '}'
           | CLASS ID '{' class_content '}'
           ;
@@ -103,20 +114,12 @@ variable_decl_in_class: type ID
                       ;
 
 method_decl_in_class: type ID '(' function_param ')'
-                    | type ID '(' function_param ')' '{' return_value '}'
+                    | type ID '(' function_param ')' '{' return_value ';' '}'
                     ;
 
-function_param: 
-              | list_of_param
-              ;
-
-list_of_param: variable_decl
-             | variable_decl ',' list_of_param
-             ;
-
-return_value: RET ';'
-            | RET value ';'
-            | RET ID ';'
+return_value: RET
+            | RET value
+            | RET ID
             ;
 
 function_decl: FNC type ':' ID '(' function_param ')'
@@ -139,6 +142,7 @@ assign: ID '=' ID
       ;
 
 call: ID '=' CALL ID '(' call_param ')'
+    | CALL ID '(' call_param ')'
     ;
 
 call_param: param ',' call_param
