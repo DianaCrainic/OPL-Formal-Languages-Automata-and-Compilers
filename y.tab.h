@@ -65,7 +65,11 @@ extern int yydebug;
     FNC = 275,
     CALL = 276,
     CLASS = 277,
-    RET = 278
+    IF = 278,
+    ELSE = 279,
+    WHILE = 280,
+    FOR = 281,
+    RET = 282
   };
 #endif
 /* Tokens.  */
@@ -89,7 +93,11 @@ extern int yydebug;
 #define FNC 275
 #define CALL 276
 #define CLASS 277
-#define RET 278
+#define IF 278
+#define ELSE 279
+#define WHILE 280
+#define FOR 281
+#define RET 282
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
