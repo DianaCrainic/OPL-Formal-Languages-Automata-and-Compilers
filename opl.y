@@ -38,12 +38,18 @@ decl: variable_decl ';'
     | class_decl
     ;
 
-variable_decl: type ID
-             | type ID '=' value
-             | type ID '[' UNSIGNED_NUMBER ']'
-             | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
-             | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+variable_decl: type variable_list
              ;
+
+variable_list: var ',' variable_list
+             | var
+             ;
+var: ID
+   | ID '=' value
+   | ID '[' UNSIGNED_NUMBER ']'
+   | ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
+   | ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+   ;
 
 type: subtype maintype
     ;
@@ -82,9 +88,18 @@ function_param:
               | list_of_param
               ;
 
-list_of_param: variable_decl
-             | variable_decl ',' list_of_param
+
+
+list_of_param: variables
+             | variables ',' list_of_param
              ;
+
+variables: type ID
+         | type ID '=' value
+         | type ID '[' UNSIGNED_NUMBER ']'
+         | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
+         | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+         ;
 
 class_decl: CLASS ID '{' class_content '}'
           ;
@@ -93,16 +108,11 @@ class_content: decl_in_class ';' class_content
              | decl_in_class ';'
              ;
 
-decl_in_class: variable_decl_in_class
+decl_in_class: variable_decl
              | method_decl_in_class 
              ;
 
-variable_decl_in_class: type ID     
-                      | type ID '=' value
-                      | type ID '[' UNSIGNED_NUMBER ']'
-                      | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
-                      | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
-                      ;
+
 
 method_decl_in_class: type ID '(' function_param ')'
                     | type ID '(' function_param ')' '{' return_value ';' '}'

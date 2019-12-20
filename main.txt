@@ -1,6 +1,7 @@
 begin_declarations
 
-int a = 2;
+int a = 2,b = 5,c;
+float z, w;
 function int : example(int a, float b[10], char ch, bool e = true);
 char b = 'a';
 string d = "abc";
@@ -27,7 +28,7 @@ class Test {
 }
 
 class test2 {
-	float a = 12.7;
+	float a = 12.7, b = 2;
 }
 
 function char : g();
