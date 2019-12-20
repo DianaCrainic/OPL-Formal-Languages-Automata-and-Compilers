@@ -44,6 +44,7 @@ variable_decl: type variable_list
 variable_list: var ',' variable_list
              | var
              ;
+
 var: ID
    | ID '=' value
    | ID '[' UNSIGNED_NUMBER ']'
@@ -88,8 +89,6 @@ function_param:
               | list_of_param
               ;
 
-
-
 list_of_param: variables
              | variables ',' list_of_param
              ;
@@ -108,11 +107,12 @@ class_content: decl_in_class ';' class_content
              | decl_in_class ';'
              ;
 
-decl_in_class: variable_decl
+decl_in_class: variable_decl_in_class
              | method_decl_in_class 
              ;
 
-
+variable_decl_in_class: type variable_list
+                      ;
 
 method_decl_in_class: type ID '(' function_param ')'
                     | type ID '(' function_param ')' '{' return_value ';' '}'
