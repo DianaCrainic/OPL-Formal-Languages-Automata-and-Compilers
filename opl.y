@@ -11,7 +11,8 @@ extern int yylineno;
      UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
      STRING_VALUE BOOL_VALUE CHAR_VALUE
      FNC CALL 
-     CLASS PUBLIC PRIVATE PROTECTED
+     CLASS
+     IF ELSE WHILE FOR
      RET
 %start s
 
@@ -22,6 +23,7 @@ s: progr {printf("Input corect sintactic\n");}
 
 progr: declarations main
      | main
+     | 
      ;
 
 declarations: BEGIN_DECL declarations_content END_DECL
@@ -84,23 +86,12 @@ list_of_param: variable_decl
              | variable_decl ',' list_of_param
              ;
 
-class_decl: segment CLASS ID '{' class_content '}'
-          | CLASS ID '{' class_content '}'
+class_decl: CLASS ID '{' class_content '}'
           ;
 
-segment: PUBLIC
-       | PRIVATE
-       | PROTECTED
-       ;
-
-class_content: segment ':' declarations_in_class segment ':' declarations_in_class segment ':' declarations_in_class
-             | segment ':' declarations_in_class segment ':' declarations_in_class
-             | segment ':' declarations_in_class
+class_content: decl_in_class ';' class_content
+             | decl_in_class ';'
              ;
-
-declarations_in_class: decl_in_class ';' declarations_in_class
-                     | decl_in_class ';'
-                     ;
 
 decl_in_class: variable_decl_in_class
              | method_decl_in_class 
@@ -142,15 +133,18 @@ call: ID '=' CALL ID '(' call_param ')'
     | CALL ID '(' call_param ')'
     ;
 
-call_param: param ',' call_param
-          | param
+call_param: 
+          | list_call_param
           ;
+
+list_call_param: param
+               | param ',' list_call_param
+               ;
 
 param: value
      | ID
      | arithmetic_expression
      | '(' call ')'
-     |
      ;
 
 arithmetic_expression: operand operator operand

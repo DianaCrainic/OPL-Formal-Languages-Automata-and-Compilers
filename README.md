@@ -13,3 +13,7 @@ v1(14.12.2019)
 -delimitarea blocurilor de cod (declaratii de variabile + main)
 
 -functii (+ apelarea functiilor)
+
+v2(20.12.2019)
+
+-clase

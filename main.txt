@@ -7,14 +7,10 @@ string d = "abc";
 bool a = false;
 
 class Example {
-    public:
-		int a1 = 13;
-		float a2[10];
-	protected:
-		char proc(int a){return 1;};
-		float p1(){return a;};
-	private:
-		int abc(float b[12], char c);
+	float a2[10];
+	char proc(int a){return 1;};
+	float p1(){return a;};
+	int abc(float b[12], char c);
 }
 
 int a[20] = {-1, 2, 2.5};
@@ -25,16 +21,13 @@ function float : abc(float A, float B);
 function string : str(string z ="zzz");
 
 class Test {
-	public:
-		int a1;
-		char a2[10];
-	private:
-		int abc(){return abc;};
+	int a1;
+	char a2[10];
+	int abc(){return abc;};
 }
 
-protected class test2 {
-	protected:
-		float a = 12.7;
+class test2 {
+	float a = 12.7;
 }
 
 function char : g();
@@ -50,7 +43,7 @@ a = b;
 c[2] = -3;
 
 
-a = call example(a,b,c);
+call example(a,b,c);
 y = call ab(2 * d + (e = call l(1,2,d) ), b*c*(x = call v() ));
 
 d = "abc";
