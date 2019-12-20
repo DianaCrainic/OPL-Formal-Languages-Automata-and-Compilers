@@ -5,11 +5,11 @@ extern int yylineno;
 %}
 
 %token INT FLOAT CHAR STRING BOOL CONST
-	   BEGIN_DECL END_DECL 
+     BEGIN_DECL END_DECL 
      BEGIN_MAIN END_MAIN
-	   ID 
-	   UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
-	   STRING_VALUE BOOL_VALUE CHAR_VALUE
+     ID 
+     UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
+     STRING_VALUE BOOL_VALUE CHAR_VALUE
      FNC CALL 
      CLASS PUBLIC PRIVATE PROTECTED
      RET
@@ -38,9 +38,9 @@ decl: variable_decl ';'
 
 variable_decl: type ID
              | type ID '=' value
-		         | type ID '[' UNSIGNED_NUMBER ']'
-		         | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
-		         | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+             | type ID '[' UNSIGNED_NUMBER ']'
+             | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
+             | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
              ;
 
 type: subtype maintype
@@ -51,11 +51,11 @@ subtype:
        ;
 
 maintype: INT
-    	  | FLOAT
-    	  | CHAR
-    	  | STRING
-    	  | BOOL
-    	  ;
+        | FLOAT
+        | CHAR
+        | STRING
+        | BOOL
+        ;
 
 value: INTEGER_NUMBER
      | UNSIGNED_NUMBER
@@ -122,9 +122,6 @@ return_value: RET
             | RET ID
             ;
 
-function_decl: FNC type ':' ID '(' function_param ')'
-             ;
-
 main: BEGIN_MAIN main_content END_MAIN
     ;
 
@@ -175,11 +172,11 @@ operator : '+'
 
 int yyerror(char *s)
 {
-	printf("Eroare: %s la linia: %d\n", s, yylineno);
+  printf("Eroare: %s la linia: %d\n", s, yylineno);
 }
 
 int main(int argc, char** argv)
 {
-	yyin = fopen(argv[1], "r");
-	yyparse();
+  yyin = fopen(argv[1], "r");
+  yyparse();
 }
