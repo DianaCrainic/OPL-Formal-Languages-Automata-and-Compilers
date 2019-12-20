@@ -24,9 +24,17 @@ const {return CONST;}
 "call" {return CALL;}
 
 "if" {return IF;}
+"then" {return THEN;}
 "else" {return ELSE;}
 "while" {return WHILE;}
-"for" {return FOR;} 
+"for" {return FOR;}
+
+"<=" {return LE;}
+">=" {return GE;}
+"==" {return EQ;}
+"!=" {return NE;}
+"||" {return OR;}
+"&&" {return AND;}
 
 [-+]([1-9][0-9]*|0) {return INTEGER_NUMBER;}
 [1-9][0-9]*|0 {return UNSIGNED_NUMBER;}

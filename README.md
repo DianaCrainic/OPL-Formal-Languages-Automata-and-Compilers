@@ -14,6 +14,8 @@ v1(14.12.2019)
 
 -functii (+ apelarea functiilor)
 
-v2(20.12.2019)
+v2(21.12.2019)
 
 -clase
+-operatori algebrici si logici
+-if, while, for

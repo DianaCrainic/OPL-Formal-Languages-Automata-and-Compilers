@@ -12,9 +12,17 @@ extern int yylineno;
      STRING_VALUE BOOL_VALUE CHAR_VALUE
      FNC CALL 
      CLASS
-     IF ELSE WHILE FOR
+     IF THEN ELSE WHILE FOR
+     LE GE EQ NE OR AND
      RET
 %start s
+
+%right '='
+%left AND OR
+%left '<' '>' LE GE EQ NE
+%left '+' '-'
+%left '*' '/'
+%left '!'
 
 %%
 
@@ -126,12 +134,15 @@ return_value: RET
 main: BEGIN_MAIN main_content END_MAIN
     ;
 
-main_content: statement ';'
-            | statement ';' main_content
+main_content: statement
+            | statement main_content
             ;
 
-statement: assign
-         | call
+statement: assign ';'
+         | call ';'
+         | if_statement
+         | while_statement
+         | for_statement
          ;
 
 assign: ID '=' ID
@@ -172,6 +183,47 @@ operator : '+'
          | '/'
          ;
 
+if_statement: IF '(' condition ')' THEN '{' code_block '}' else_statement
+            ;
+
+else_statement: ELSE '{' code_block '}'
+              |
+              ;
+
+condition: condition '<' condition
+         | condition '>' condition
+         | condition LE condition
+         | condition GE condition
+         | condition EQ condition
+         | condition NE condition
+         | condition OR condition
+         | condition AND condition
+         | '(' condition ')'
+         | ID
+         | value
+         | arithmetic_expression
+         ;
+
+code_block:
+          | statement code_block
+          ;
+
+while_statement: WHILE '(' condition ')' '{' code_block '}'
+               ;
+
+for_statement: FOR '(' for_initialization ';' condition ';' for_step  ')' '{' code_block '}'
+             ;
+
+for_initialization: assign
+                  | variable_decl
+                  ;
+
+for_step: '-' '-' ID
+        | '+' '+' ID
+        | ID '+' '+'
+        | ID '-' '-'
+        | ID '=' arithmetic_expression
+        ;
 %%
 
 int yyerror(char *s)

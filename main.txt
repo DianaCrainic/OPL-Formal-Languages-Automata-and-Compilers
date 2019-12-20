@@ -43,6 +43,23 @@ begin_main
 a = b;
 c[2] = -3;
 
+if (a < (b + true)) then
+{
+	a = 3;
+	if (a > 3) then
+	{
+		a = 5;
+	}
+	else
+	{
+		c = 3;
+	}
+}
+
+for (int i = 1; i < 3; ++i)
+{
+	ceva = 3;
+}
 
 call example(a,b,c);
 y = call ab(2 * d + (e = call l(1,2,d) ), b*c*(x = call v() ));
