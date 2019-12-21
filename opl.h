@@ -67,3 +67,9 @@ typedef struct
   Class classTable[MAX_CLASS_NUMBER];
   int classNumber;
 } ClassTable;
+
+typedef struct expr_info {
+  int intvalue;
+        char* strvalue;
+  int type;
+} expr_info;

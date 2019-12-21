@@ -44,10 +44,10 @@ const {return CONST;}
 "&&" {return AND;}
 "Eval" {return EVAL;}
 
-[-+]?([1-9][0-9]*|0) {return INTEGER_NUMBER;}
+[-+]?([1-9][0-9]*|0) {yylval.intval=atoi(yytext); return INTEGER_NUMBER;}
 ([1-9][0-9]*\.[0-9]+)|(0\.[0-9]+) {return FLOAT_NUMBER;}
 "true"|"false" {return BOOL_VALUE;}
-\"[^\"]+\" {return STRING_VALUE;}
+\"[^\"]+\" {yylval.strval=strdup(yytext); return STRING_VALUE;}
 \'.\' {return CHAR_VALUE;}
 [A-Za-z][A-Za-z0-9]* {return ID;}
 

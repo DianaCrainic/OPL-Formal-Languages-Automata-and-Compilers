@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "functions.h"
+#include "opl.h"
 
 extern int yylex();
 extern int yyerror(char * syntaxError);
@@ -11,15 +11,31 @@ VariableTable listOfVariables;
 FunctionTable listOfFunctions;
 ClassTable listOfClasses;
 
+expr_info* create_int_expr(int value);
+expr_info* create_str_expr(char* value1, char* value2);
+void free_expr(expr_info* expr);
+void print_expr(expr_info* expr);
+void check_array_length(int len);
+
 %}
+
+%union {
+int intval;
+char* strval;
+struct expr_info* expr_ptr;
+}
+
+%type <expr_ptr>eval_expression
+%type <expr_ptr>eval_result
 
 %token INT FLOAT CHAR STRING BOOL CONST
      BEGIN_DECL END_DECL 
      BEGIN_MAIN END_MAIN
      ID
-     INTEGER_NUMBER 
+     <intval>INTEGER_NUMBER 
      FLOAT_NUMBER
-     STRING_VALUE BOOL_VALUE CHAR_VALUE
+     <strval>STRING_VALUE
+     BOOL_VALUE CHAR_VALUE
      FNC CALL 
      CLASS
      IF THEN ELSE WHILE DO FOR
@@ -38,7 +54,7 @@ ClassTable listOfClasses;
 
 %%
 
-s: progr {printf("Input corect sintactic\n");}
+s: progr {printf("Correct input, well done\n");}
  ;
 
 progr: declarations main
@@ -68,9 +84,9 @@ variable_list: var ',' variable_list
 var: ID
    | ID '=' value
    | ID '=' ID
-   | ID '[' INTEGER_NUMBER ']'
-   | ID '[' INTEGER_NUMBER ']' '=' '{' '}'
-   | ID '[' INTEGER_NUMBER ']' '=' '{' array '}'
+   | ID '[' INTEGER_NUMBER ']' {check_array_length($3);}
+   | ID '[' INTEGER_NUMBER ']' '=' '{' '}' {check_array_length($3);}
+   | ID '[' INTEGER_NUMBER ']' '=' '{' array '}' {check_array_length($3);}
    ;
 
 type: subtype maintype
@@ -115,9 +131,9 @@ list_of_param: variables
 
 variables: type ID
          | type ID '=' value 
-         | type ID '[' INTEGER_NUMBER ']'
-         | type ID '[' INTEGER_NUMBER ']' '=' '{' '}'
-         | type ID '[' INTEGER_NUMBER ']' '=' '{' array '}'
+         | type ID '[' INTEGER_NUMBER ']' {check_array_length($4);}
+         | type ID '[' INTEGER_NUMBER ']' '=' '{' '}' {check_array_length($4);}
+         | type ID '[' INTEGER_NUMBER ']' '=' '{' array '}' {check_array_length($4);}
          | ID ID 
          ;
 
@@ -168,16 +184,16 @@ assign: ID '=' ID
       | ID '.' ID '=' value
       | ID '=' arithmetic_expression
       | ID '.' ID '=' arithmetic_expression
-      | ID '[' INTEGER_NUMBER ']' '=' value
-      | ID '.' ID '[' INTEGER_NUMBER ']' '=' value
-      | ID '[' INTEGER_NUMBER ']' '=' ID
-      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID
-      | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID
-      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID
-      | ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']'
-      | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']'
-      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']'
-      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']'
+      | ID '[' INTEGER_NUMBER ']' '=' value {check_array_length($3);}
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' value {check_array_length($5);}
+      | ID '[' INTEGER_NUMBER ']' '=' ID {check_array_length($3);}
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID {check_array_length($5);}
+      | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID {check_array_length($3);}
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID {check_array_length($5);}
+      | ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']' {check_array_length($3); check_array_length($8);}
+      | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' {check_array_length($3); check_array_length($10);}
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']' {check_array_length($5); check_array_length($10);}
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' {check_array_length($5); check_array_length($12);}
       ;
 
 call: ID '=' CALL ID '(' call_param ')'
@@ -257,25 +273,45 @@ for_initialization: assign
 eval_statement: EVAL '(' eval_expression ')'
               ;
 
-// eval_expression: eval_result {printf("Rezultatul expresiei :%d\n", $<intval>$);}
-//                ;
-
-// eval_result: eval_result '+' eval_result
-//            | eval_result '-' eval_result
-//            | eval_result '*' eval_result
-//            | eval_result '/' eval_result
-//            |
-
-eval_expression: eval_operand operator eval_operand
-               | eval_operand operator eval_expression
+eval_expression: eval_result {print_expr($$); free_expr($$);}
                ;
 
-eval_operand: ID
-            | ID '.' ID
-            | INTEGER_NUMBER
-            | '(' call ')'
-            | LENGTH '(' string_content')'
-            ;
+eval_result: eval_result '+' eval_result
+            { 
+                $$ = create_int_expr($1->intvalue + $3->intvalue);
+                free_expr($1); 
+                free_expr($3);
+            }
+           | eval_result '-' eval_result
+            { 
+                $$ = create_int_expr($1->intvalue - $3->intvalue);
+                free_expr($1); 
+                free_expr($3);
+            }
+           | eval_result '*' eval_result
+            { 
+                $$ = create_int_expr($1->intvalue * $3->intvalue);
+                free_expr($1);
+                free_expr($3);
+            }
+           | eval_result '/' eval_result
+            { 
+                $$ = create_int_expr($1->intvalue / $3->intvalue);
+                free_expr($1);
+                free_expr($3);
+            }
+           | INTEGER_NUMBER {$$ = create_int_expr($1);}
+
+// eval_expression: eval_operand operator eval_operand
+//                | eval_operand operator eval_expression
+//                ;
+
+// eval_operand: ID
+//             | ID '.' ID
+//             | INTEGER_NUMBER
+//             | '(' call ')'
+//             | LENGTH '(' string_content')'
+//             ;
 
 string_statement: ID '=' string_function
                 ;
@@ -296,9 +332,62 @@ string_content: ID
 
 %%
 
+expr_info* create_int_expr(int value)
+{
+   expr_info* expr = (expr_info*)malloc(sizeof(expr_info));
+   expr->intvalue = value;
+   expr->type = 1;
+   return expr;
+}
+
+expr_info* create_str_expr(char* value1, char* value2) 
+{
+    expr_info* expr = (expr_info*)malloc(sizeof(expr_info));
+    int len2 = value2 ? strlen(value2) : 0;
+    expr->strvalue = (char*) malloc(sizeof(char)*(strlen(value1) + len2 + 1)); 
+    strcpy(expr->strvalue, value1);
+    if(value2)
+    {
+        strcat(expr->strvalue, value2);
+    }
+    expr->type = 2;
+    return expr;
+}
+
+void free_expr(expr_info* expr)
+{
+    if(expr->type == 2)
+    {
+        free(expr->strvalue);
+    }
+    free(expr);
+}
+
+
+void print_expr(expr_info* expr)
+{
+    if(expr->type == 1) 
+    {
+        printf("Eval expr(line: %d) with value:%d\n", yylineno, expr->intvalue);
+    }
+    else
+    {
+        printf("Str expr with value:%s\n", expr->strvalue); 
+    } 
+}
+
+void check_array_length(int len)
+{
+    if (len <= 0)
+    {
+        printf("Invalid array length(line: %d)\n", yylineno);
+        exit(1);
+    }
+}
+
 int yyerror(char *s)
 {
-  printf("Eroare: %s la linia: %d\n", s, yylineno);
+  printf("Error: %s\n line: %d\n", s, yylineno);
 }
 
 int main(int argc, char** argv)
