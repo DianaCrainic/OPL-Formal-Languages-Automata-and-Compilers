@@ -1,0 +1,16 @@
+Variables:
+name: a || scope: global || type: integer
+name: b || scope: global || type: integer
+name: c || scope: global || type: integer
+name: z || scope: global || type: float
+name: w || scope: global || type: float
+name: b || scope: global || type: char
+name: d || scope: global || type: string
+name: a || scope: global || type: bool || const 
+name: a2 || scope: global || type: float || array of length: 10
+name: a || scope: global || type: integer || array of length: 20
+name: a || scope: global || type: integer || const 
+name: a1 || scope: global || type: integer
+name: a2 || scope: global || type: char || array of length: 10
+name: a || scope: global || type: float
+name: b || scope: global || type: float

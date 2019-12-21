@@ -13,7 +13,7 @@
 // Maximum effective number of parameters per method
 #define MAX_PARAMETER_NUMBER 16
 
-// Maximum effective number of variables per body
+// Maximum effective number of variables
 #define MAX_VARIABLE_NUMBER 64
 
 extern FILE* yyin;
@@ -24,48 +24,53 @@ typedef struct
   int mainType;
   // 0-int, 1-float, 2-char, 3-string, 4-bool
   int isConst;
+  int isArray;
+  int lengthOfArray;
 } Type;
 
-typedef struct 
+struct Variable
 {
   char name[MAX_STRING_LENGTH];
   char scope[MAX_STRING_LENGTH];
   Type t;
-} Variable;
+};
 
 typedef struct 
 {
-  Variable varTable[MAX_VARIABLE_NUMBER];
+  struct Variable *varTable;
   int varNumber;
+  int size;
 } VariableTable;
 
-typedef struct 
+struct Function
 {
   char name[MAX_STRING_LENGTH];
   Type returnType;
-  Variable paramTable[MAX_PARAMETER_NUMBER];
+  struct Variable paramTable[MAX_PARAMETER_NUMBER];
   int paramNumber;
-} Function;
+};
 
 typedef struct 
 {
-  Function funcTable[MAX_METHOD_NUMBER];
+  struct Function *funcTable;
   int funcNumber;
+  int size;
 } FunctionTable;
 
-typedef struct
+struct Class
 {
   char name[MAX_STRING_LENGTH];
-  Variable attribTable[MAX_ATTRIBUTE_NUMBER];
+  struct Variable attribTable[MAX_ATTRIBUTE_NUMBER];
   int attribNumber;
-  Function methTable[MAX_METHOD_NUMBER];
+  struct Function methTable[MAX_METHOD_NUMBER];
   int methNumber;
-} Class;
+};
 
 typedef struct 
 {
-  Class classTable[MAX_CLASS_NUMBER];
+  struct Class *classTable;
   int classNumber;
+  int size;
 } ClassTable;
 
 typedef struct expr_info {

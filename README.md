@@ -31,3 +31,5 @@ v3(22.12.2019)
 -corpul functiilor
 
 -eval
+
+-symbol table pentru variabile globale

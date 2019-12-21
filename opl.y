@@ -11,10 +11,27 @@ VariableTable listOfVariables;
 FunctionTable listOfFunctions;
 ClassTable listOfClasses;
 
+struct Variable v;
+struct Function fun;
+struct Class cl;
+
 expr_info* create_int_expr(int value);
 expr_info* create_str_expr(char* value1, char* value2);
 void free_expr(expr_info* expr);
 void print_expr(expr_info* expr);
+
+void init_variables(VariableTable* arr);
+void init_functions(FunctionTable* arr);
+void init_classes(ClassTable* arr);
+
+void insert_variable(VariableTable* arr, struct Variable var);
+void insert_function(FunctionTable* arr, struct Function fun);
+void insert_class(ClassTable* arr, struct Class cl);
+
+void free_variables(VariableTable* arr);
+void free_functions(FunctionTable* arr);
+void free_classes(ClassTable* arr);
+
 void check_array_length(int len);
 
 %}
@@ -31,7 +48,7 @@ struct expr_info* expr_ptr;
 %token INT FLOAT CHAR STRING BOOL CONST
      BEGIN_DECL END_DECL 
      BEGIN_MAIN END_MAIN
-     ID
+     <strval>ID
      <intval>INTEGER_NUMBER 
      FLOAT_NUMBER
      <strval>STRING_VALUE
@@ -62,7 +79,7 @@ progr: declarations main
      | 
      ;
 
-declarations: BEGIN_DECL declarations_content END_DECL
+declarations: BEGIN_DECL {strcpy(v.scope, "global\0");} declarations_content END_DECL
             ;
 
 declarations_content: decl
@@ -81,26 +98,62 @@ variable_list: var ',' variable_list
              | var
              ;
 
-var: ID
-   | ID '=' value
-   | ID '=' ID
-   | ID '[' INTEGER_NUMBER ']' {check_array_length($3);}
-   | ID '[' INTEGER_NUMBER ']' '=' '{' '}' {check_array_length($3);}
-   | ID '[' INTEGER_NUMBER ']' '=' '{' array '}' {check_array_length($3);}
+var: ID 
+    {
+        v.t.isArray = 0;
+        strcpy(v.name, $1);
+        insert_variable(&listOfVariables, v);
+    }
+   | ID '=' value 
+    {
+        v.t.isArray = 0;
+        strcpy(v.name, $1);
+        insert_variable(&listOfVariables, v);
+    }
+   | ID '=' ID 
+    {
+        v.t.isArray = 0;
+        strcpy(v.name, $1);
+        insert_variable(&listOfVariables, v);
+    }
+   | ID '[' INTEGER_NUMBER ']' 
+    {
+        check_array_length($3);
+        v.t.isArray = 1;
+        v.t.lengthOfArray = $3;
+        strcpy(v.name, $1);
+        insert_variable(&listOfVariables, v);
+    }
+   | ID '[' INTEGER_NUMBER ']' '=' '{' '}' 
+    {
+        check_array_length($3);
+        v.t.isArray = 1;
+        v.t.lengthOfArray = $3;
+        strcpy(v.name, $1);
+        insert_variable(&listOfVariables, v);
+    }
+   | ID '[' INTEGER_NUMBER ']' '=' '{' array '}' 
+    {
+        check_array_length($3);
+        v.t.isArray = 1;
+        v.t.lengthOfArray = $3;
+        strcpy(v.name, $1);
+        insert_variable(&listOfVariables, v);
+    }
    ;
 
 type: subtype maintype
     ;
 
-subtype:
-       | CONST 
+subtype: {v.t.isConst = 0;}
+       | CONST {v.t.isConst = 1;}
        ;
 
-maintype: INT
-        | FLOAT
-        | CHAR
-        | STRING
-        | BOOL
+maintype: INT {v.t.mainType = 0;}
+        | FLOAT {v.t.mainType = 1;}
+        | CHAR {v.t.mainType = 2;}
+        | STRING {v.t.mainType = 3;}
+        | BOOL {v.t.mainType = 4;}
         ;
 
 value: INTEGER_NUMBER
@@ -376,6 +429,81 @@ void print_expr(expr_info* expr)
     } 
 }
 
+void init_variables(VariableTable* arr)
+{
+    arr->varTable = (struct Variable *)malloc(MAX_VARIABLE_NUMBER * sizeof(struct Variable));
+    arr->varNumber = 0;
+    arr->size = MAX_VARIABLE_NUMBER;
+}
+
+void init_functions(FunctionTable* arr)
+{
+    arr->funcTable = (struct Function *)malloc(MAX_METHOD_NUMBER * sizeof(struct Function));
+    arr->funcNumber = 0;
+    arr->size = MAX_METHOD_NUMBER;
+}
+
+void init_classes(ClassTable* arr)
+{
+    arr->classTable = (struct Class *)malloc(MAX_CLASS_NUMBER * sizeof(struct Class));
+    arr->classNumber = 0;
+    arr->size = MAX_CLASS_NUMBER;
+}
+
+void insert_variable(VariableTable* arr, struct Variable var)
+{
+    if (arr->varNumber == arr->size)
+    {
+        printf("Too many variables\n");
+        exit(2);
+    }
+
+    arr->varTable[arr->varNumber++] = var;
+}
+
+void insert_function(FunctionTable* arr, struct Function fun)
+{
+    if (arr->funcNumber == arr->size)
+    {
+        printf("Too many functions\n");
+        exit(3);
+    }
+
+    arr->funcTable[arr->funcNumber++] = fun;
+}
+
+void insert_class(ClassTable* arr, struct Class cl)
+{
+    if (arr->classNumber == arr->size)
+    {
+        printf("Too many classes\n");
+        exit(3);
+    }
+
+    arr->classTable[arr->classNumber++] = cl;
+}
+
+void free_variables(VariableTable* arr)
+{
+    free(arr->varTable);
+    arr->varNumber = 0;
+    arr->size = 0;
+}
+
+void free_functions(FunctionTable* arr)
+{
+    free(arr->funcTable);
+    arr->funcNumber = 0;
+    arr->size = 0;
+}
+
+void free_classes(ClassTable* arr)
+{
+    free(arr->classTable);
+    arr->classNumber = 0;
+    arr->size = 0;
+}
+
 void check_array_length(int len)
 {
     if (len <= 0)
@@ -387,11 +515,62 @@ void check_array_length(int len)
 
 int yyerror(char *s)
 {
-  printf("Error: %s\n line: %d\n", s, yylineno);
+    printf("Error: %s\n line: %d\n", s, yylineno);
 }
 
 int main(int argc, char** argv)
 {
-  yyin = fopen(argv[1], "r");
-  yyparse();
+    yyin = fopen(argv[1], "r");
+
+    init_variables(&listOfVariables);
+    init_functions(&listOfFunctions);
+    init_classes(&listOfClasses);
+
+    FILE* f = fopen("symbol_table.txt", "w");
+    fclose(f);
+
+    yyparse();
+
+    f = fopen("symbol_table.txt", "a");
+    fprintf(f, "Variables:\n");
+    for (int i = 0; i < listOfVariables.varNumber; ++i)
+    {
+        fprintf(f, "name: %s || scope: %s || type: ", listOfVariables.varTable[i].name, listOfVariables.varTable[i].scope);
+        switch (listOfVariables.varTable[i].t.mainType)
+        {
+            case 0:
+                fprintf(f, "integer");
+                break;
+            case 1:
+                fprintf(f, "float");
+                break;
+            case 2:
+                fprintf(f, "char");
+                break;
+            case 3:
+                fprintf(f, "string");
+                break;
+            case 4:
+                fprintf(f, "bool");
+        }
+
+        if (listOfVariables.varTable[i].t.isConst == 1)
+        {
+            fprintf(f, " || const ");
+        }
+
+        if (listOfVariables.varTable[i].t.isArray == 1)
+        {
+            fprintf(f, " || array of length: ");
+            char str[10];
+            sprintf(str, "%d", listOfVariables.varTable[i].t.lengthOfArray);
+            fprintf(f, "%s", str);
+        }
+
+        fprintf(f, "\n");
+    }
+
+    free_variables(&listOfVariables);
+    free_functions(&listOfFunctions);
+    free_classes(&listOfClasses);
 }

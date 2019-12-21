@@ -49,7 +49,7 @@ const {return CONST;}
 "true"|"false" {return BOOL_VALUE;}
 \"[^\"]+\" {yylval.strval=strdup(yytext); return STRING_VALUE;}
 \'.\' {return CHAR_VALUE;}
-[A-Za-z][A-Za-z0-9]* {return ID;}
+[A-Za-z][A-Za-z0-9]* {yylval.strval=strdup(yytext); return ID;}
 
 [ \t] ;
 \n {++yylineno;}
