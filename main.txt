@@ -122,7 +122,7 @@ while i > 3 do
 	i = i - 1;
 }
 
-Eval(5 + -3 + 5 - a);
+Eval(5 + -3 + 5 * 2);
 
 a = concat(s1,s2);
 len = length("abcd");

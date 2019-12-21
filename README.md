@@ -29,3 +29,5 @@ v3(22.12.2019)
 -operatii cu obiecte
 
 -corpul functiilor
+
+-eval
