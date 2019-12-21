@@ -92,6 +92,7 @@ ClassTable listOfClasses;
      LE GE EQ NE OR AND
      RET
      EVAL
+     CONCAT LENGTH COMPARE LOWER UPPER
 %start s
 
 %right '='
@@ -222,6 +223,7 @@ statement: assign ';'
          | while_statement
          | for_statement
          | eval_statement ';'
+         | string_statement ';'
          ;
 
 assign: ID '=' ID
@@ -329,6 +331,21 @@ eval_operand: ID
             | INTEGER_NUMBER
             | '(' call ')'
             ;
+
+string_statement: CONCAT '(' strings_content ')'
+                | ID '=' LENGTH '(' string_content')'
+                | ID '=' COMPARE '(' strings_content ')'
+                | ID '=' LOWER '(' string_content ')'
+                | ID '=' UPPER '(' string_content ')'
+                ;
+
+strings_content: string_content ',' string_content 
+               ;
+
+string_content: ID
+              | STRING_VALUE
+              ;
+
 %%
 
 int yyerror(char *s)

@@ -30,6 +30,12 @@ const {return CONST;}
 "do" {return DO;}
 "for" {return FOR;}
 
+"concat" {return CONCAT;}
+"length" {return LENGTH;}
+"compare" {return COMPARE;}
+"lower" {return LOWER;}
+"upper" {return UPPER;}
+
 "<=" {return LE;}
 ">=" {return GE;}
 "==" {return EQ;}
