@@ -124,7 +124,7 @@ while i > 3 do
 
 Eval(5 + -3 + 5 - a);
 
-concat(s1,s2);
+a = concat(s1,s2);
 len = length("abcd");
 result = compare(str1, str2);
 a = lower(ch);

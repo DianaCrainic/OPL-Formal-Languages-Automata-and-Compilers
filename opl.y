@@ -265,6 +265,7 @@ param: value
      | ID '.' ID
      | arithmetic_expression
      | '(' call ')'
+     | string_function
      ;
 
 arithmetic_expression: operand operator operand
@@ -330,14 +331,18 @@ eval_operand: ID
             | ID '.' ID
             | INTEGER_NUMBER
             | '(' call ')'
+            | LENGTH '(' string_content')'
             ;
 
-string_statement: CONCAT '(' strings_content ')'
-                | ID '=' LENGTH '(' string_content')'
-                | ID '=' COMPARE '(' strings_content ')'
-                | ID '=' LOWER '(' string_content ')'
-                | ID '=' UPPER '(' string_content ')'
+string_statement: ID '=' string_function
                 ;
+
+string_function: CONCAT '(' strings_content ')'
+               | LENGTH '(' string_content')'
+               | COMPARE '(' strings_content ')'
+               | LOWER '(' string_content ')'
+               | UPPER '(' string_content ')'
+               ;
 
 strings_content: string_content ',' string_content 
                ;
