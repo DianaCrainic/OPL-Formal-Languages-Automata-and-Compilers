@@ -84,7 +84,7 @@ ClassTable listOfClasses;
      BEGIN_DECL END_DECL 
      BEGIN_MAIN END_MAIN
      ID
-     UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
+     INTEGER_NUMBER FLOAT_NUMBER
      STRING_VALUE BOOL_VALUE CHAR_VALUE
      FNC CALL 
      CLASS
@@ -133,9 +133,9 @@ variable_list: var ',' variable_list
 var: ID
    | ID '=' value
    | ID '=' ID
-   | ID '[' UNSIGNED_NUMBER ']'
-   | ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
-   | ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+   | ID '[' INTEGER_NUMBER ']'
+   | ID '[' INTEGER_NUMBER ']' '=' '{' '}'
+   | ID '[' INTEGER_NUMBER ']' '=' '{' array '}'
    ;
 
 type: subtype maintype
@@ -153,7 +153,6 @@ maintype: INT
         ;
 
 value: INTEGER_NUMBER
-     | UNSIGNED_NUMBER
      | FLOAT_NUMBER
      | STRING_VALUE
      | BOOL_VALUE
@@ -181,9 +180,9 @@ list_of_param: variables
 
 variables: type ID
          | type ID '=' value 
-         | type ID '[' UNSIGNED_NUMBER ']'
-         | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
-         | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+         | type ID '[' INTEGER_NUMBER ']'
+         | type ID '[' INTEGER_NUMBER ']' '=' '{' '}'
+         | type ID '[' INTEGER_NUMBER ']' '=' '{' array '}'
          | ID ID 
          ;
 
@@ -233,16 +232,16 @@ assign: ID '=' ID
       | ID '.' ID '=' value
       | ID '=' arithmetic_expression
       | ID '.' ID '=' arithmetic_expression
-      | ID '[' UNSIGNED_NUMBER ']' '=' value
-      | ID '.' ID '[' UNSIGNED_NUMBER ']' '=' value
-      | ID '[' UNSIGNED_NUMBER ']' '=' ID
-      | ID '.' ID '[' UNSIGNED_NUMBER ']' '=' ID
-      | ID '[' UNSIGNED_NUMBER ']' '=' ID '.' ID
-      | ID '.' ID '[' UNSIGNED_NUMBER ']' '=' ID '.' ID
-      | ID '[' UNSIGNED_NUMBER ']' '=' ID '[' UNSIGNED_NUMBER ']'
-      | ID '[' UNSIGNED_NUMBER ']' '=' ID '.' ID '[' UNSIGNED_NUMBER ']'
-      | ID '.' ID '[' UNSIGNED_NUMBER ']' '=' ID '[' UNSIGNED_NUMBER ']'
-      | ID '.' ID '[' UNSIGNED_NUMBER ']' '=' ID '.' ID '[' UNSIGNED_NUMBER ']'
+      | ID '[' INTEGER_NUMBER ']' '=' value
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' value
+      | ID '[' INTEGER_NUMBER ']' '=' ID
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID
+      | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID
+      | ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']'
+      | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']'
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']'
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']'
       ;
 
 call: ID '=' CALL ID '(' call_param ')'
@@ -297,7 +296,7 @@ condition: condition '<' condition
          | condition NE condition
          | condition OR condition
          | condition AND condition
-         | '(' condition ')'
+         | '(' call ')'
          | value
          | ID
          | ID '.' ID
@@ -328,7 +327,7 @@ eval_expression: eval_operand operator eval_operand
 eval_operand: ID
             | ID '.' ID
             | INTEGER_NUMBER
-            | UNSIGNED_NUMBER
+            | '(' call ')'
             ;
 %%
 

@@ -38,8 +38,7 @@ const {return CONST;}
 "&&" {return AND;}
 "Eval" {return EVAL;}
 
-[-+]([1-9][0-9]*|0) {return INTEGER_NUMBER;}
-[1-9][0-9]*|0 {return UNSIGNED_NUMBER;}
+[-+]?([1-9][0-9]*|0) {return INTEGER_NUMBER;}
 ([1-9][0-9]*\.[0-9]+)|(0\.[0-9]+) {return FLOAT_NUMBER;}
 "true"|"false" {return BOOL_VALUE;}
 \"[^\"]+\" {return STRING_VALUE;}

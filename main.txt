@@ -86,7 +86,7 @@ a = b;
 
 c[2] = -3;
 
-if a < (b + true) then
+if a < b + true then
 {
 	a = 3;
 	if a > 3 then
@@ -121,5 +121,7 @@ while i > 3 do
 	a = 2;
 	i = i - 1;
 }
+
+Eval(5 + -3 + 5 - a);
 
 end_main
