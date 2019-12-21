@@ -21,3 +21,11 @@ v2(21.12.2019)
 -operatori algebrici si logici
 
 -if, while, for
+
+v3(22.12.2019)
+
+-pregatirea structurilor pentru symbol table
+
+-operatii cu obiecte
+
+-corpul functiilor

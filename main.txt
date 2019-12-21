@@ -1,37 +1,79 @@
 begin_declarations
 
-int a = 2,b = 5,c;
+int a = 2, b = 5, c = true;
+
 float z, w;
-function int : example(int a, float b[10], char ch, bool e = true);
+
+function int : example(int a, float b[10], char ch, bool e = true)
+{
+	return e;
+}
+
 char b = 'a';
+
 string d = "abc";
+
 bool a = false;
 
-class Example {
+class Example 
+{
 	float a2[10];
-	char proc(int a){return 1;};
-	float p1(){return a;};
-	int abc(float b[12], char c);
+
+	char proc(int a)
+	{
+		return 1;
+	}
+
+	float p1()
+	{
+		return a;
+	}
+
+	int abc(float b[12], char c)
+	{
+		b = 3;
+		return a;
+	}
 }
 
 int a[20] = {-1, 2, 2.5};
+
 const int a = 2;
 
 
-function float : abc(float A, float B);
-function string : str(string z ="zzz");
-
-class Test {
-	int a1;
-	char a2[10];
-	int abc(){return abc;};
+function float : abc(float A, float B, Example b)
+{
+	A = 5 + 3;
+	return A;
 }
 
-class test2 {
+function string : str(string z ="zzz")
+{
+	return C;
+}
+
+class Test 
+{
+	int a1;
+
+	char a2[10];
+
+	int abc()
+	{
+		a1 = 2;
+		return abc;
+	}
+}
+
+class test2 
+{
 	float a = 12.7, b = 2;
 }
 
-function char : g();
+function char : g()
+{
+	return;
+}
 
 
 end_declarations
@@ -41,12 +83,13 @@ end_declarations
 begin_main
 
 a = b;
+
 c[2] = -3;
 
-if (a < (b + true)) then
+if a < (b + true) then
 {
 	a = 3;
-	if (a > 3) then
+	if a > 3 then
 	{
 		a = 5;
 	}
@@ -56,16 +99,27 @@ if (a < (b + true)) then
 	}
 }
 
-for (int i = 1; i < 3; ++i)
+for (i = 1; i < 3; i = i + 1)
 {
 	ceva = 3;
 }
 
-call example(a,b,c);
+a = call example(a,b,c);
+
 y = call ab(2 * d + (e = call l(1,2,d) ), b*c*(x = call v() ));
 
 d = "abc";
 
-aux = call f(2.14, (v = call b(2*4, c) ));
+d.c = 2;
+
+a.prt = "abc";
+
+aux = call f(2.14, (v = call b(2*4, c, d.v) ));
+
+while i > 3 do
+{
+	a = 2;
+	i = i - 1;
+}
 
 end_main

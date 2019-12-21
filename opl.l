@@ -27,6 +27,7 @@ const {return CONST;}
 "then" {return THEN;}
 "else" {return ELSE;}
 "while" {return WHILE;}
+"do" {return DO;}
 "for" {return FOR;}
 
 "<=" {return LE;}
@@ -35,6 +36,7 @@ const {return CONST;}
 "!=" {return NE;}
 "||" {return OR;}
 "&&" {return AND;}
+"Eval" {return EVAL;}
 
 [-+]([1-9][0-9]*|0) {return INTEGER_NUMBER;}
 [1-9][0-9]*|0 {return UNSIGNED_NUMBER;}

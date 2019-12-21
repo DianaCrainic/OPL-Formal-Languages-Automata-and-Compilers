@@ -1,20 +1,97 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Maximum effective size of strings
+#define MAX_STRING_LENGTH 255
+
+// Maximum effective number of classes
+#define MAX_CLASS_NUMBER 16
+
+// Maximum effective number of attributes per class
+#define MAX_ATTRIBUTE_NUMBER 16
+
+// Maximum effective number of methods per class
+#define MAX_METHOD_NUMBER 64
+
+// Maximum effective number of parameters per method
+#define MAX_PARAMETER_NUMBER 16
+
+// Maximum effective number of variables per body
+#define MAX_VARIABLE_NUMBER 64
+
 extern FILE* yyin;
 extern int yylineno;
+
+typedef struct
+{
+  int mainType;
+  // 0-int, 1-float, 2-char, 3-string, 4-bool
+  int isConst;
+} Type;
+
+typedef struct 
+{
+  char name[MAX_STRING_LENGTH];
+  char scope[MAX_STRING_LENGTH];
+  Type t;
+} Variable;
+
+typedef struct 
+{
+  Variable varTable[MAX_VARIABLE_NUMBER];
+  int varNumber;
+} VariableTable;
+
+typedef struct 
+{
+  char name[MAX_STRING_LENGTH];
+  Type returnType;
+  Variable paramTable[MAX_PARAMETER_NUMBER];
+  int paramNumber;
+} Function;
+
+typedef struct 
+{
+  Function funcTable[MAX_METHOD_NUMBER];
+  int funcNumber;
+} FunctionTable;
+
+typedef struct
+{
+  char name[MAX_STRING_LENGTH];
+  Variable attribTable[MAX_ATTRIBUTE_NUMBER];
+  int attribNumber;
+  Function methTable[MAX_METHOD_NUMBER];
+  int methNumber;
+} Class;
+
+typedef struct 
+{
+  Class classTable[MAX_CLASS_NUMBER];
+  int classNumber;
+} ClassTable;
+
+
+VariableTable listOfVariables;
+FunctionTable listOfFunctions;
+ClassTable listOfClasses;
+
 %}
 
 %token INT FLOAT CHAR STRING BOOL CONST
      BEGIN_DECL END_DECL 
      BEGIN_MAIN END_MAIN
-     ID 
+     ID
      UNSIGNED_NUMBER INTEGER_NUMBER FLOAT_NUMBER
      STRING_VALUE BOOL_VALUE CHAR_VALUE
      FNC CALL 
      CLASS
-     IF THEN ELSE WHILE FOR
+     IF THEN ELSE WHILE DO FOR
      LE GE EQ NE OR AND
      RET
+     EVAL
 %start s
 
 %right '='
@@ -42,7 +119,7 @@ declarations_content: decl
                     ;
 
 decl: variable_decl ';'
-    | function_decl ';'
+    | function_decl
     | class_decl
     ;
 
@@ -55,6 +132,7 @@ variable_list: var ',' variable_list
 
 var: ID
    | ID '=' value
+   | ID '=' ID
    | ID '[' UNSIGNED_NUMBER ']'
    | ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
    | ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
@@ -86,11 +164,11 @@ array: array_element
      | array_element ',' array
      ;
 
-array_element: ID
-             | value
+array_element: value
+             | ID
              ;
 
-function_decl: FNC type ':' ID '(' function_param ')'
+function_decl: FNC type ':' ID '(' function_param ')' '{' code_block return_value ';' '}'
              ;
 
 function_param: 
@@ -102,20 +180,21 @@ list_of_param: variables
              ;
 
 variables: type ID
-         | type ID '=' value
+         | type ID '=' value 
          | type ID '[' UNSIGNED_NUMBER ']'
          | type ID '[' UNSIGNED_NUMBER ']' '=' '{' '}'
          | type ID '[' UNSIGNED_NUMBER ']' '=' '{' array '}'
+         | ID ID 
          ;
 
 class_decl: CLASS ID '{' class_content '}'
           ;
 
-class_content: decl_in_class ';' class_content
-             | decl_in_class ';'
+class_content: decl_in_class class_content
+             | decl_in_class
              ;
 
-decl_in_class: variable_decl_in_class
+decl_in_class: variable_decl_in_class ';'
              | method_decl_in_class 
              ;
 
@@ -123,7 +202,7 @@ variable_decl_in_class: type variable_list
                       ;
 
 method_decl_in_class: type ID '(' function_param ')'
-                    | type ID '(' function_param ')' '{' return_value ';' '}'
+                    | type ID '(' function_param ')' '{' code_block return_value ';' '}'
                     ;
 
 return_value: RET
@@ -143,15 +222,33 @@ statement: assign ';'
          | if_statement
          | while_statement
          | for_statement
+         | eval_statement ';'
          ;
 
 assign: ID '=' ID
+      | ID '.' ID '=' ID
+      | ID '=' ID '.' ID
+      | ID '.' ID '=' ID '.' ID
       | ID '=' value
+      | ID '.' ID '=' value
+      | ID '=' arithmetic_expression
+      | ID '.' ID '=' arithmetic_expression
       | ID '[' UNSIGNED_NUMBER ']' '=' value
+      | ID '.' ID '[' UNSIGNED_NUMBER ']' '=' value
+      | ID '[' UNSIGNED_NUMBER ']' '=' ID
+      | ID '.' ID '[' UNSIGNED_NUMBER ']' '=' ID
+      | ID '[' UNSIGNED_NUMBER ']' '=' ID '.' ID
+      | ID '.' ID '[' UNSIGNED_NUMBER ']' '=' ID '.' ID
+      | ID '[' UNSIGNED_NUMBER ']' '=' ID '[' UNSIGNED_NUMBER ']'
+      | ID '[' UNSIGNED_NUMBER ']' '=' ID '.' ID '[' UNSIGNED_NUMBER ']'
+      | ID '.' ID '[' UNSIGNED_NUMBER ']' '=' ID '[' UNSIGNED_NUMBER ']'
+      | ID '.' ID '[' UNSIGNED_NUMBER ']' '=' ID '.' ID '[' UNSIGNED_NUMBER ']'
       ;
 
 call: ID '=' CALL ID '(' call_param ')'
-    | CALL ID '(' call_param ')'
+    | ID '=' CALL ID '.' ID '(' call_param ')'
+    | ID '.' ID '=' CALL ID '(' call_param ')'
+    | ID '.' ID '=' CALL ID '.' ID '(' call_param ')'
     ;
 
 call_param: 
@@ -164,6 +261,7 @@ list_call_param: param
 
 param: value
      | ID
+     | ID '.' ID
      | arithmetic_expression
      | '(' call ')'
      ;
@@ -174,6 +272,7 @@ arithmetic_expression: operand operator operand
 
 operand: value
        | ID
+       | ID '.' ID
        | '(' call ')'
        ;
 
@@ -183,7 +282,7 @@ operator : '+'
          | '/'
          ;
 
-if_statement: IF '(' condition ')' THEN '{' code_block '}' else_statement
+if_statement: IF condition THEN '{' code_block '}' else_statement
             ;
 
 else_statement: ELSE '{' code_block '}'
@@ -199,8 +298,9 @@ condition: condition '<' condition
          | condition OR condition
          | condition AND condition
          | '(' condition ')'
-         | ID
          | value
+         | ID
+         | ID '.' ID
          | arithmetic_expression
          ;
 
@@ -208,22 +308,28 @@ code_block:
           | statement code_block
           ;
 
-while_statement: WHILE '(' condition ')' '{' code_block '}'
+while_statement: WHILE condition DO '{' code_block '}'
                ;
 
-for_statement: FOR '(' for_initialization ';' condition ';' for_step  ')' '{' code_block '}'
+for_statement: FOR '(' for_initialization ';' condition ';' assign ')' '{' code_block '}'
              ;
 
 for_initialization: assign
                   | variable_decl
                   ;
 
-for_step: '-' '-' ID
-        | '+' '+' ID
-        | ID '+' '+'
-        | ID '-' '-'
-        | ID '=' arithmetic_expression
-        ;
+eval_statement: EVAL '(' eval_expression ')'
+              ;
+
+eval_expression: eval_operand operator eval_operand
+               | eval_operand operator eval_expression
+               ;
+
+eval_operand: ID
+            | ID '.' ID
+            | INTEGER_NUMBER
+            | UNSIGNED_NUMBER
+            ;
 %%
 
 int yyerror(char *s)
