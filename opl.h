@@ -21,60 +21,58 @@ extern int yylineno;
 
 typedef struct
 {
-  int mainType;
-  // 0-int, 1-float, 2-char, 3-string, 4-bool
-  int isConst;
-  int isArray;
-  int lengthOfArray;
+    int mainType;
+    // 0-int, 1-float, 2-char, 3-string, 4-bool, 5-object
+    int isConst;
+    int isArray;
+    int lengthOfArray;
 } Type;
 
 struct Variable
 {
-  char name[MAX_STRING_LENGTH];
-  char scope[MAX_STRING_LENGTH];
-  Type t;
+    char name[MAX_STRING_LENGTH];
+    char scope[MAX_STRING_LENGTH];
+    Type t;
 };
 
 typedef struct 
 {
-  struct Variable *varTable;
-  int varNumber;
-  int size;
+    struct Variable *varTable;
+    int varNumber;
+    int size;
 } VariableTable;
 
 struct Function
 {
-  char name[MAX_STRING_LENGTH];
-  Type returnType;
-  struct Variable paramTable[MAX_PARAMETER_NUMBER];
-  int paramNumber;
+    char name[MAX_STRING_LENGTH];
+    int returnType;
+    VariableTable paramTable;
 };
 
 typedef struct 
 {
-  struct Function *funcTable;
-  int funcNumber;
-  int size;
+    struct Function *funcTable;
+    int funcNumber;
+    int size;
 } FunctionTable;
 
 struct Class
 {
-  char name[MAX_STRING_LENGTH];
-  struct Variable attribTable[MAX_ATTRIBUTE_NUMBER];
-  int attribNumber;
-  struct Function methTable[MAX_METHOD_NUMBER];
-  int methNumber;
+    char name[MAX_STRING_LENGTH];
+    VariableTable attribTable;
+    FunctionTable methTable;
 };
 
 typedef struct 
 {
-  struct Class *classTable;
-  int classNumber;
-  int size;
+    struct Class *classTable;
+    int classNumber;
+    int size;
 } ClassTable;
 
-typedef struct expr_info {
-  int intvalue;
-        char* strvalue;
-  int type;
+typedef struct expr_info 
+{
+    int intvalue;
+    char* strvalue;
+    int type;
 } expr_info;

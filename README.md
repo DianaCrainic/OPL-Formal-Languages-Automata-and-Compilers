@@ -22,7 +22,7 @@ v2(21.12.2019)
 
 -if, while, for
 
-v3(22.12.2019)
+v3(21.12.2019)
 
 -pregatirea structurilor pentru symbol table
 
@@ -33,3 +33,11 @@ v3(22.12.2019)
 -eval
 
 -symbol table pentru variabile globale
+
+v4(22.12.2019)
+
+-symbol table pentru variabile
+
+v5(23.12.2019)
+
+-symbol table complet

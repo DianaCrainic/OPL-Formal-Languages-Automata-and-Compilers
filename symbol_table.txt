@@ -1,16 +1,64 @@
 Variables:
-name: a || scope: global || type: integer
-name: b || scope: global || type: integer
-name: c || scope: global || type: integer
-name: z || scope: global || type: float
-name: w || scope: global || type: float
-name: b || scope: global || type: char
-name: d || scope: global || type: string
-name: a || scope: global || type: bool || const 
-name: a2 || scope: global || type: float || array of length: 10
-name: a || scope: global || type: integer || array of length: 20
-name: a || scope: global || type: integer || const 
-name: a1 || scope: global || type: integer
-name: a2 || scope: global || type: char || array of length: 10
-name: a || scope: global || type: float
-name: b || scope: global || type: float
+1) name: a || scope: global || type: integer
+2) name: c || scope: global || type: integer
+3) name: z || scope: global || type: float
+4) name: w || scope: global || type: float
+5) name: abc || scope: #function# || type: integer
+6) name: a || scope: #function#while#if# || type: integer
+7) name: c || scope: #function#while#else#while# || type: integer
+8) name: b || scope: global || type: char
+9) name: d || scope: global || type: string
+10) name: a || scope: global || type: bool || const 
+11) name: b33333 || scope: #class#method# || type: integer
+12) name: a || scope: global || type: integer || array of length: 20
+13) name: a || scope: global || type: integer || const 
+
+
+---------------------
+
+
+Functions:
+1) name: example || return type: integer || parameters: 
+>>> 1.1) name: er || type: integer
+>>> 1.2) name: a || type: float || array of length: 10
+>>> 1.3) name: ch || type: char
+>>> 1.4) name: a || type: bool
+2) name: abc || return type: float || parameters: 
+>>> 2.1) name: A || type: float
+>>> 2.2) name: B || type: float
+>>> 2.3) name: b || type: object
+3) name: str || return type: string || parameters: 
+>>> 3.1) name: z || type: string
+4) name: g || return type: char || parameters: no
+
+
+---------------------
+
+
+Classes: 
+1) name: Example 
+***variables: 
+>>>>>> 1.1) name: a2 || type: float || array of length: 10
+***methods: 
+>>>>>> 1.1) name: proc || return type: integer || parameters: 
+>>>>>>>>> 1.1.1) name: a || type: integer
+>>>>>> 1.2) name: p1 || return type: float || parameters: no
+>>>>>> 1.3) name: abc || return type: integer || parameters: 
+>>>>>>>>> 1.3.1) name: b || type: float || array of length: 12
+>>>>>>>>> 1.3.2) name: c || type: char
+2) name: Test 
+***variables: 
+>>>>>> 2.1) name: a1 || type: integer
+>>>>>> 2.2) name: a2 || type: char || array of length: 10
+***methods: 
+>>>>>> 2.1) name: abc || return type: integer || parameters: no
+3) name: test2 
+***variables: 
+>>>>>> 3.1) name: a || type: float
+>>>>>> 3.2) name: b || type: float
+***methods: no
+
+
+---------------------
+
+

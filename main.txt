@@ -1,11 +1,26 @@
 begin_declarations
 
-int a = 2, b = 5, c = true;
+int a = 5, c = true;
 
 float z, w;
 
-function int : example(int a, float b[10], char ch, bool e = true)
+function int : example(int er = 2, float a[10], char ch, bool a = true)
 {
+	int abc;
+	while 2 < 3 do
+	{
+		if a < c then
+		{
+			int a;
+		}
+		else
+		{
+			while b < c do
+			{
+				int c;
+			}
+		}
+	}
 	return e;
 }
 
@@ -31,7 +46,7 @@ class Example
 
 	int abc(float b[12], char c)
 	{
-		b = 3;
+		int b33333 = 3;
 		return a;
 	}
 }
@@ -47,7 +62,7 @@ function float : abc(float A, float B, Example b)
 	return A;
 }
 
-function string : str(string z ="zzz")
+function string : str(string z)
 {
 	return C;
 }
