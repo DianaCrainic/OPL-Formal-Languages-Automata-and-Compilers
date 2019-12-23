@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "opl.h"
+#include "structs.h"
+#include "functions.h"
 
 extern int yylex();
 extern int yyerror(char * syntaxError);
@@ -10,10 +11,12 @@ extern int yyerror(char * syntaxError);
 VariableTable listOfVariables;
 FunctionTable listOfFunctions;
 ClassTable listOfClasses;
+ArrayEval listOfEval;
 
 struct Variable v;
 struct Function fun;
 struct Class cl;
+struct EvalExpr expr;
 
 int noErrors = 0;
 int isFunction = 0;
@@ -23,20 +26,16 @@ expr_info* create_str_expr(char* value1, char* value2);
 void free_expr(expr_info* expr);
 void print_expr(expr_info* expr);
 
-void init_variables(VariableTable* arr);
-void init_functions(FunctionTable* arr);
-void init_classes(ClassTable* arr);
-
-void insert_variable(VariableTable* arr, struct Variable var);
-void insert_function(FunctionTable* arr, struct Function fun);
-void insert_class(ClassTable* arr, struct Class cl);
-
-void free_variables(VariableTable* arr);
-void free_functions(FunctionTable* arr);
-void free_classes(ClassTable* arr);
-
 void update_scope();
 void check_array_length(int len);
+
+//3.1
+void variable_previously_defined(char* id);
+void class_variable_previously_defined(char* className, char* id);
+
+//3.2
+void variable_was_declared(char* id);
+void class_variable_was_declared(VariableTable* arr, char * id);
 
 %}
 
@@ -76,7 +75,7 @@ void check_array_length(int len);
 
 %%
 
-s: progr {printf("Correct input, well done\n"); noErrors = 1;}
+s: progr {printf("No syntactic errors\n"); noErrors = 1;}
  ;
 
 progr: declarations main
@@ -105,24 +104,28 @@ variable_list: var {insert_variable(&listOfVariables, v);} ',' variable_list
 
 var: ID 
     {
+        variable_was_declared($1);
         v.line = yylineno;
         v.t.isArray = 0;
         strcpy(v.name, $1);
     }
    | ID '=' value 
     {
+        variable_was_declared($1);
         v.line = yylineno;
         v.t.isArray = 0;
         strcpy(v.name, $1);
     }
    | ID '=' ID 
     {
+        variable_was_declared($1);
         v.line = yylineno;
         v.t.isArray = 0;
         strcpy(v.name, $1);
     }
    | ID '[' INTEGER_NUMBER ']' 
     {
+        variable_was_declared($1);
         v.line = yylineno;
         check_array_length($3);
         v.t.isArray = 1;
@@ -131,6 +134,7 @@ var: ID
     }
    | ID '[' INTEGER_NUMBER ']' '=' '{' '}' 
     {
+        variable_was_declared($1);
         v.line = yylineno;
         check_array_length($3);
         v.t.isArray = 1;
@@ -139,6 +143,7 @@ var: ID
     }
    | ID '[' INTEGER_NUMBER ']' '=' '{' array '}' 
     {
+        variable_was_declared($1);
         v.line = yylineno;
         check_array_length($3);
         v.t.isArray = 1;
@@ -270,18 +275,21 @@ class_variable_list: class_variable {insert_variable(&cl.attribTable, v);}',' cl
 
 class_variable: ID
               {
+                class_variable_was_declared(&cl.attribTable, $1);
                 v.line = yylineno;
                 v.t.isArray = 0;
                 strcpy(v.name, $1);
               }
               | ID '=' value 
               {
+                class_variable_was_declared(&cl.attribTable, $1);
                 v.line = yylineno;
                 v.t.isArray = 0;
                 strcpy(v.name, $1);
               }
               | ID '[' INTEGER_NUMBER ']' 
               {
+                class_variable_was_declared(&cl.attribTable, $1);
                 v.line = yylineno;
                 check_array_length($3);
                 v.t.isArray = 1;
@@ -290,6 +298,7 @@ class_variable: ID
               }
               | ID '[' INTEGER_NUMBER ']' '=' '{' '}' 
               {
+                class_variable_was_declared(&cl.attribTable, $1);
                 v.line = yylineno;
                 check_array_length($3);
                 v.t.isArray = 1;
@@ -298,6 +307,7 @@ class_variable: ID
               }
               | ID '[' INTEGER_NUMBER ']' '=' '{' array '}' 
               {
+                class_variable_was_declared(&cl.attribTable, $1);
                 v.line = yylineno;
                 check_array_length($3);
                 v.t.isArray = 1;
@@ -325,7 +335,7 @@ list_of_method_param: type class_variable {insert_variable(&fun.paramTable, v);}
 
 return_value: RET
             | RET value
-            | RET ID
+            | RET ID {variable_previously_defined($2);}
             ;
 
 main: BEGIN_MAIN {strcat(v.scope, "main#\0");} main_content END_MAIN
@@ -344,30 +354,108 @@ statement: assign ';'
          | string_statement ';'
          ;
 
-assign: ID '=' ID
-      | ID '.' ID '=' ID
+assign: ID '=' ID 
+      {
+        variable_previously_defined($1);
+        variable_previously_defined($3);
+      }
+      | ID '.' ID '=' ID 
+      {
+        variable_previously_defined($5);
+        class_variable_previously_defined($1, $3);
+      }
       | ID '=' ID '.' ID
-      | ID '.' ID '=' ID '.' ID
-      | ID '=' value
-      | ID '.' ID '=' value
-      | ID '=' arithmetic_expression
-      | ID '.' ID '=' arithmetic_expression
-      | ID '[' INTEGER_NUMBER ']' '=' value {check_array_length($3);}
-      | ID '.' ID '[' INTEGER_NUMBER ']' '=' value {check_array_length($5);}
-      | ID '[' INTEGER_NUMBER ']' '=' ID {check_array_length($3);}
-      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID {check_array_length($5);}
-      | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID {check_array_length($3);}
-      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID {check_array_length($5);}
-      | ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']' {check_array_length($3); check_array_length($8);}
-      | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' {check_array_length($3); check_array_length($10);}
-      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']' {check_array_length($5); check_array_length($10);}
-      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' {check_array_length($5); check_array_length($12);}
+      {
+        variable_previously_defined($1);
+        class_variable_previously_defined($3, $5);
+      }
+      | ID '.' ID '=' ID '.' ID 
+      {
+        class_variable_previously_defined($1, $3);
+        class_variable_previously_defined($5, $7);
+      }
+      | ID '=' value 
+      {
+        variable_previously_defined($1);
+      }
+      | ID '.' ID '=' value 
+      {
+        class_variable_previously_defined($1, $3);
+      }
+      | ID '=' arithmetic_expression 
+      {
+        variable_previously_defined($1);
+      }
+      | ID '.' ID '=' arithmetic_expression 
+      {
+        class_variable_previously_defined($1, $3);
+      }
+      | ID '[' INTEGER_NUMBER ']' '=' value 
+      {
+        check_array_length($3);
+        variable_previously_defined($1);
+      }
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' value 
+      {
+        check_array_length($5);
+        class_variable_previously_defined($1, $3);
+      }
+      | ID '[' INTEGER_NUMBER ']' '=' ID 
+      {
+        check_array_length($3); 
+        variable_previously_defined($1); 
+        variable_previously_defined($6);
+      }
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID 
+      {
+        check_array_length($5);
+        variable_previously_defined($8);
+        class_variable_previously_defined($1, $3);
+      }
+      | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID 
+      {
+        check_array_length($3);
+        variable_previously_defined($1);
+        class_variable_previously_defined($6, $8);
+      }
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID 
+      {
+        check_array_length($5);
+        class_variable_previously_defined($1, $3);
+        class_variable_previously_defined($8, $10);
+      }
+      | ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']' 
+      {
+        check_array_length($3);
+        check_array_length($8);
+        variable_previously_defined($1);
+        variable_previously_defined($6);
+      }
+      | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' 
+      {
+        check_array_length($3); 
+        check_array_length($10); 
+        variable_previously_defined($1);
+        class_variable_previously_defined($6, $8);
+      }
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']' 
+      {
+        check_array_length($5);
+        check_array_length($10);
+        variable_previously_defined($8);
+        class_variable_previously_defined($1, $3);
+      }
+      | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' 
+      {
+        check_array_length($5);
+        check_array_length($12);
+        class_variable_previously_defined($1, $3);
+        class_variable_previously_defined($8, $10);
+      }
       ;
 
-call: ID '=' CALL ID '(' call_param ')'
-    | ID '=' CALL ID '.' ID '(' call_param ')'
-    | ID '.' ID '=' CALL ID '(' call_param ')'
-    | ID '.' ID '=' CALL ID '.' ID '(' call_param ')'
+call: ID '=' CALL ID '(' call_param ')' {variable_previously_defined($1);}
+    | ID '.' ID '=' CALL ID '(' call_param ')' {class_variable_previously_defined($1, $3);}
     ;
 
 call_param: 
@@ -379,8 +467,8 @@ list_call_param: param
                ;
 
 param: value
-     | ID
-     | ID '.' ID
+     | ID {variable_previously_defined($1);}
+     | ID '.' ID {class_variable_previously_defined($1, $3);}
      | arithmetic_expression
      | '(' call ')'
      | string_function
@@ -391,8 +479,8 @@ arithmetic_expression: operand operator operand
                      ;
 
 operand: value
-       | ID
-       | ID '.' ID
+       | ID {variable_previously_defined($1);}
+       | ID '.' ID {class_variable_previously_defined($1, $3);}
        | '(' call ')'
        ;
 
@@ -419,8 +507,8 @@ condition: condition '<' condition
          | condition AND condition
          | '(' call ')'
          | value
-         | ID
-         | ID '.' ID
+         | ID {variable_previously_defined($1);}
+         | ID '.' ID {class_variable_previously_defined($1, $3);}
          | arithmetic_expression
          ;
 
@@ -442,7 +530,13 @@ for_initialization: assign
 eval_statement: EVAL '(' eval_expression ')'
               ;
 
-eval_expression: eval_result {print_expr($$); free_expr($$);}
+eval_expression: eval_result 
+               {
+                expr.line = yylineno;
+                expr.result = $$->intvalue;
+                insert_eval(&listOfEval, expr); 
+                free_expr($$);
+               }
                ;
 
 eval_result: eval_result '+' eval_result
@@ -482,7 +576,7 @@ eval_result: eval_result '+' eval_result
 //             | LENGTH '(' string_content')'
 //             ;
 
-string_statement: ID '=' string_function
+string_statement: ID '=' string_function {variable_previously_defined($1);}
                 ;
 
 string_function: CONCAT '(' strings_content ')'
@@ -495,7 +589,8 @@ string_function: CONCAT '(' strings_content ')'
 strings_content: string_content ',' string_content 
                ;
 
-string_content: ID
+string_content: ID {variable_previously_defined($1);}
+              | ID '.' ID {class_variable_previously_defined($1, $3);}
               | STRING_VALUE
               ;
 
@@ -545,113 +640,6 @@ void print_expr(expr_info* expr)
     } 
 }
 
-void init_variables(VariableTable* arr)
-{
-    arr->varTable = (struct Variable *)malloc(MAX_VARIABLE_NUMBER * sizeof(struct Variable));
-    arr->varNumber = 0;
-    arr->size = MAX_VARIABLE_NUMBER;
-}
-
-void init_functions(FunctionTable* arr)
-{
-    arr->funcTable = (struct Function *)malloc(MAX_METHOD_NUMBER * sizeof(struct Function));
-    arr->funcNumber = 0;
-    arr->size = MAX_METHOD_NUMBER;
-}
-
-void init_classes(ClassTable* arr)
-{
-    arr->classTable = (struct Class *)malloc(MAX_CLASS_NUMBER * sizeof(struct Class));
-    arr->classNumber = 0;
-    arr->size = MAX_CLASS_NUMBER;
-}
-
-void insert_variable(VariableTable* arr, struct Variable var)
-{
-    if (arr->varNumber == arr->size)
-    {
-        printf("Too many variables\n");
-        exit(2);
-    }
-
-    strcpy(arr->varTable[arr->varNumber].name, var.name);
-    strcpy(arr->varTable[arr->varNumber].scope, var.scope);
-    arr->varTable[arr->varNumber].line = var.line;
-    arr->varTable[arr->varNumber].t.mainType = var.t.mainType;
-    arr->varTable[arr->varNumber].t.isConst = var.t.isConst;
-    arr->varTable[arr->varNumber].t.isArray = var.t.isArray;
-    arr->varTable[arr->varNumber].t.lengthOfArray = var.t.lengthOfArray;
-    ++arr->varNumber;
-}
-
-void insert_function(FunctionTable* arr, struct Function fun)
-{
-    if (arr->funcNumber == arr->size)
-    {
-        printf("Too many functions\n");
-        exit(3);
-    }
-
-    arr->funcTable[arr->funcNumber].returnType = fun.returnType;
-    arr->funcTable[arr->funcNumber].line = fun.line;
-    strcpy(arr->funcTable[arr->funcNumber].name, fun.name);
-
-    init_variables(&arr->funcTable[arr->funcNumber].paramTable);
-    for (int i = 0; i < fun.paramTable.varNumber; ++i)
-    {
-        insert_variable(&arr->funcTable[arr->funcNumber].paramTable, fun.paramTable.varTable[i]);
-    }
-
-    ++arr->funcNumber;
-}
-
-void insert_class(ClassTable* arr, struct Class cl)
-{
-    if (arr->classNumber == arr->size)
-    {
-        printf("Too many classes\n");
-        exit(3);
-    }
-
-    strcpy(arr->classTable[arr->classNumber].name, cl.name);
-    arr->classTable[arr->classNumber].line = cl.line;
-
-    init_variables(&arr->classTable[arr->classNumber].attribTable);
-    for (int i = 0; i < cl.attribTable.varNumber; ++i)
-    {
-        insert_variable(&arr->classTable[arr->classNumber].attribTable, cl.attribTable.varTable[i]);
-    }
-
-    init_functions(&arr->classTable[arr->classNumber].methTable);
-    for (int i = 0; i < cl.methTable.funcNumber; ++i)
-    {
-        insert_function(&arr->classTable[arr->classNumber].methTable, cl.methTable.funcTable[i]);
-    }
-
-    ++arr->classNumber;
-}
-
-void free_variables(VariableTable* arr)
-{
-    free(arr->varTable);
-    arr->varNumber = 0;
-    arr->size = 0;
-}
-
-void free_functions(FunctionTable* arr)
-{
-    free(arr->funcTable);
-    arr->funcNumber = 0;
-    arr->size = 0;
-}
-
-void free_classes(ClassTable* arr)
-{
-    free(arr->classTable);
-    arr->classNumber = 0;
-    arr->size = 0;
-}
-
 void update_scope()
 {
     int len = strlen(v.scope);
@@ -673,6 +661,65 @@ void check_array_length(int len)
     }
 }
 
+void variable_was_declared(char* id)
+{
+    for (int i = 0; i < listOfVariables.varNumber; ++i)
+    {
+        if (strcmp(listOfVariables.varTable[i].name, id) == 0)
+        {
+            printf("Variable %s (line: %d) was already declared (line %d)\n", id, yylineno, listOfVariables.varTable[i].line);
+            exit(2);
+        }
+    }
+}
+
+void class_variable_was_declared(VariableTable* arr, char* id)
+{
+    for (int i = 0; i < arr->varNumber; ++i)
+    {
+        if (strcmp(arr->varTable[i].name, id) == 0)
+        {
+            printf("Variable %s (line: %d) from class %s was already declared (line %d)\n", id, yylineno, cl.name, arr->varTable[i].line);
+            exit(3);
+        }
+    }
+}
+
+void variable_previously_defined(char* id)
+{
+    for (int i = 0; i < listOfVariables.varNumber; ++i)
+    {
+        if (strcmp(listOfVariables.varTable[i].name, id) == 0)
+        {
+            return;
+        }
+    }
+    printf("Variable %s (line: %d) has not been previously defined\n", id, yylineno);
+    exit(4);
+}
+
+void class_variable_previously_defined(char* className, char* id)
+{
+    for (int i = 0; i < listOfClasses.classNumber; ++i)
+    {
+        if (strcmp(listOfClasses.classTable[i].name, className) == 0)
+        {
+            for (int j = 0; j < listOfClasses.classTable[i].attribTable.varNumber; ++j)
+            {
+                if (strcmp(listOfClasses.classTable[i].attribTable.varTable[j].name, id) == 0)
+                {
+                    return;
+                }
+            }
+            printf("Variable %s (line: %d) from class %s has not been previously defined\n", id, yylineno, className);
+            exit(5);
+        }
+        return;
+    }
+    printf("Class %s (line: %d) has not been previously defined\n", className, yylineno);
+    exit(6);
+}
+
 int yyerror(char *s)
 {
     printf("Error(line %d): %s\n", yylineno, s);
@@ -685,11 +732,17 @@ int main(int argc, char** argv)
     init_variables(&listOfVariables);
     init_functions(&listOfFunctions);
     init_classes(&listOfClasses);
+    init_eval(&listOfEval);
 
     yyparse();
 
     if (noErrors == 1)
     {
+        for (int i = 0; i < listOfEval.evalNumber; ++i)
+        {
+            printf("Eval expr(line: %d) with value: %d\n", listOfEval.evalExpressions[i].line, listOfEval.evalExpressions[i].result);
+        }
+
         FILE* f = fopen("symbol_table.txt", "w");
         fclose(f);
         f = fopen("symbol_table.txt", "a");
@@ -819,6 +872,7 @@ int main(int argc, char** argv)
                 {
                     fprintf(f, "no\n");
                 }
+                fprintf(f, "\n");
             }
             fprintf(f, "\n\n---------------------\n\n\n");
         }
@@ -955,6 +1009,7 @@ int main(int argc, char** argv)
                 {
                     fprintf(f, "no\n");
                 }
+                fprintf(f, "\n");
             }
             fprintf(f, "\n\n---------------------\n\n\n");
         }
@@ -965,4 +1020,5 @@ int main(int argc, char** argv)
     free_variables(&listOfVariables);
     free_functions(&listOfFunctions);
     free_classes(&listOfClasses);
+    free_eval(&listOfEval);
 }

@@ -4,14 +4,15 @@ Variables:
 3) name: z || scope: global || type: float || line: 5
 4) name: w || scope: global || type: float || line: 5
 5) name: abc || scope: #function# || type: integer || line: 9
-6) name: a || scope: #function#while#if# || type: integer || line: 14
-7) name: c || scope: #function#while#else#while# || type: integer || line: 20
+6) name: r || scope: #function#while#if# || type: integer || line: 14
+7) name: cc || scope: #function#while#else#while# || type: integer || line: 20
 8) name: b || scope: global || type: char || line: 27
 9) name: d || scope: global || type: string || line: 29
-10) name: a || scope: global || type: bool || const || line: 31
+10) name: aa || scope: global || type: bool || const || line: 31
 11) name: b33333 || scope: #class#method# || type: integer || line: 49
-12) name: a || scope: global || type: integer || array of length: 20 || line: 54
-13) name: a || scope: global || type: integer || const || line: 56
+12) name: aaa || scope: global || type: integer || array of length: 20 || line: 54
+13) name: a2 || scope: global || type: integer || const || line: 56
+14) name: i || scope: #main#for# || type: integer || line: 123
 
 
 ---------------------
@@ -23,13 +24,17 @@ Functions:
 >>> 1.2) name: a || type: float || array of length: 10
 >>> 1.3) name: ch || type: char
 >>> 1.4) name: a || type: bool
+
 2) name: abc || return type: float || line: 59 || parameters: 
 >>> 2.1) name: A || type: float
 >>> 2.2) name: B || type: float
 >>> 2.3) name: b || type: object
+
 3) name: str || return type: string || line: 65 || parameters: 
 >>> 3.1) name: z || type: string
+
 4) name: g || return type: char || line: 93 || parameters: no
+
 
 
 ---------------------
@@ -46,20 +51,24 @@ Classes:
 >>>>>> 1.3) name: abc || return type: integer || line: 47 || parameters: 
 >>>>>>>>> 1.3.1) name: b || type: float || array of length: 12
 >>>>>>>>> 1.3.2) name: c || type: char
+
 2) name: Test || line: 70
 ***variables: 
 >>>>>> 2.1) name: a1 || type: integer || line: 72
 >>>>>> 2.2) name: a2 || type: char || array of length: 10 || line: 74
 ***methods: 
 >>>>>> 2.1) name: abc || return type: integer || line: 76 || parameters: no
+
 3) name: test2 || line: 83
 ***variables: 
 >>>>>> 3.1) name: a || type: float || line: 85
 >>>>>> 3.2) name: b || type: float || line: 85
 ***methods: no
+
 4) name: a || line: 88
 ***variables: no
 ***methods: no
+
 
 
 ---------------------

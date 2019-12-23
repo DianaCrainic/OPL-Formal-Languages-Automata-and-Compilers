@@ -11,24 +11,24 @@ function int : example(int er = 2, float a[10], char ch, bool a = true)
 	{
 		if a < c then
 		{
-			int a;
+			int r;
 		}
 		else
 		{
-			while b < c do
+			while a < c do
 			{
-				int c;
+				int cc;
 			}
 		}
 	}
-	return e;
+	return a;
 }
 
 char b = 'a';
 
 string d = "abc";
 
-const bool a = false;
+const bool aa = false;
 
 class Example 
 {
@@ -51,20 +51,20 @@ class Example
 	}
 }
 
-int a[20] = {-1, 2, 2.5};
+int aaa[20] = {-1, 2, 2.5};
 
-const int a = 2;
+const int a2 = 2;
 
 
 function float : abc(float A, float B, Example b)
 {
-	A = 5 + 3;
-	return A;
+	aaa = 5 + 3;
+	return aaa;
 }
 
 function string : str(string z)
 {
-	return C;
+	return a2;
 }
 
 class Test 
@@ -75,12 +75,12 @@ class Test
 
 	method int abc()
 	{
-		a1 = 2;
-		return abc;
+		aaa = 2;
+		return a2;
 	}
 }
 
-class test2 
+class test2
 {
 	float a = 12.7, b = 2;
 }
@@ -103,6 +103,7 @@ end_declarations
 begin_main
 
 a = b;
+Eval(4 - 9);
 
 c[2] = -3;
 
@@ -119,14 +120,14 @@ if a < b + true then
 	}
 }
 
-for (i = 1; i < 3; i = i + 1)
+for (int i = 1; i < 3; i = i + 1)
 {
-	ceva = 3;
+	a = 3;
 }
 
 a = call example(a,b,c);
 
-y = call ab(2 * d + (e = call l(1,2,d) ), b*c*(x = call v() ));
+aaa = call ab(2 * d + (a = call l(1,2,aaa) ), b*c*(a = call v() ));
 
 d = "abc";
 
@@ -134,7 +135,7 @@ d.c = 2;
 
 a.prt = "abc";
 
-aux = call f(2.14, (v = call b(2*4, c, d.v) ));
+a = call f(2.14, (a = call b(2*4, c, d.v) ));
 
 while i > 3 do
 {
@@ -143,12 +144,13 @@ while i > 3 do
 }
 
 Eval(5 + 2 / 4 - -3 + 5 * 2);
+Eval(3 + 5);
 
-a = concat(s1,s2);
-len = length("abcd");
-result = compare(str1, str2);
-a = lower(ch);
-b = upper(ch);
+a = concat(b, c);
+c = length("abcd");
+a = compare(b, c);
+a = lower(c);
+b = upper(c);
 
 
 end_main

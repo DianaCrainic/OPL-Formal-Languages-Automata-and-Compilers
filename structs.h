@@ -73,6 +73,19 @@ typedef struct
     int size;
 } ClassTable;
 
+struct EvalExpr
+{
+    int result;
+    int line;
+};
+
+typedef struct
+{
+    struct EvalExpr *evalExpressions;
+    int evalNumber;
+    int size;
+}ArrayEval;
+
 typedef struct expr_info 
 {
     int intvalue;
