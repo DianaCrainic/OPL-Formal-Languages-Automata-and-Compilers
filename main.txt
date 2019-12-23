@@ -85,6 +85,11 @@ class test2
 	float a = 12.7, b = 2;
 }
 
+class a
+{
+	
+}
+
 function char : g()
 {
 	return;

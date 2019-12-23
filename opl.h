@@ -33,6 +33,7 @@ struct Variable
     char name[MAX_STRING_LENGTH];
     char scope[MAX_STRING_LENGTH];
     Type t;
+    int line;
 };
 
 typedef struct 
@@ -44,9 +45,10 @@ typedef struct
 
 struct Function
 {
+    VariableTable paramTable;
     char name[MAX_STRING_LENGTH];
     int returnType;
-    VariableTable paramTable;
+    int line;
 };
 
 typedef struct 
@@ -58,9 +60,10 @@ typedef struct
 
 struct Class
 {
-    char name[MAX_STRING_LENGTH];
     VariableTable attribTable;
     FunctionTable methTable;
+    char name[MAX_STRING_LENGTH];
+    int line;
 };
 
 typedef struct 
