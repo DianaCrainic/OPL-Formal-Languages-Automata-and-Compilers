@@ -40,7 +40,7 @@ Classes:
 ***variables: 
 >>>>>> 1.1) name: a2 || type: float || array of length: 10 || line: 35
 ***methods: 
->>>>>> 1.1) name: proc || return type: integer || line: 37 || parameters: 
+>>>>>> 1.1) name: proc || return type: char || line: 37 || parameters: 
 >>>>>>>>> 1.1.1) name: a || type: integer
 >>>>>> 1.2) name: p1 || return type: float || line: 42 || parameters: no
 >>>>>> 1.3) name: abc || return type: integer || line: 47 || parameters: 

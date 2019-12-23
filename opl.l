@@ -21,6 +21,7 @@ const {return CONST;}
 "class" {return CLASS;}
 "return" {return RET;}
 "function" {return FNC;}
+"method" {return MTH;}
 "call" {return CALL;}
 
 "if" {return IF;}

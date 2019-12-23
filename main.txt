@@ -34,17 +34,17 @@ class Example
 {
 	float a2[10];
 
-	char proc(int a)
+	method char proc(int a)
 	{
 		return 1;
 	}
 
-	float p1()
+	method float p1()
 	{
 		return a;
 	}
 
-	int abc(float b[12], char c)
+	method int abc(float b[12], char c)
 	{
 		int b33333 = 3;
 		return a;
@@ -73,7 +73,7 @@ class Test
 
 	char a2[10];
 
-	int abc()
+	method int abc()
 	{
 		a1 = 2;
 		return abc;

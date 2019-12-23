@@ -16,6 +16,7 @@ struct Function fun;
 struct Class cl;
 
 int noErrors = 0;
+int isFunction = 0;
 
 expr_info* create_int_expr(int value);
 expr_info* create_str_expr(char* value1, char* value2);
@@ -58,7 +59,7 @@ void check_array_length(int len);
      <strval>STRING_VALUE
      BOOL_VALUE CHAR_VALUE
      FNC CALL 
-     CLASS
+     CLASS MTH
      IF THEN ELSE WHILE DO FOR
      LE GE EQ NE OR AND
      RET
@@ -153,11 +154,11 @@ subtype: {v.t.isConst = 0;}
        | CONST {v.t.isConst = 1;}
        ;
 
-maintype: INT {v.t.mainType = 0; fun.returnType = 0;}
-        | FLOAT {v.t.mainType = 1; fun.returnType = 1;}
-        | CHAR {v.t.mainType = 2; fun.returnType = 2;}
-        | STRING {v.t.mainType = 3; fun.returnType = 3;}
-        | BOOL {v.t.mainType = 4; fun.returnType = 4;}
+maintype: INT { if(isFunction == 0) {v.t.mainType = 0;} else {fun.returnType = 0;}}
+        | FLOAT {if(isFunction == 0) {v.t.mainType = 1;} else {fun.returnType = 1;}}
+        | CHAR {if(isFunction == 0) {v.t.mainType = 2;} else {fun.returnType = 2;}}
+        | STRING {if(isFunction == 0) {v.t.mainType = 3;} else {fun.returnType = 3;}}
+        | BOOL {if(isFunction == 0) {v.t.mainType = 4;} else {fun.returnType = 4;}}
         ;
 
 value: INTEGER_NUMBER
@@ -175,8 +176,8 @@ array_element: value
              | ID
              ;
 
-function_decl: FNC {strcat(v.scope, "function#\0"); init_variables(&fun.paramTable);}
-               type ':' ID {fun.line = yylineno;} 
+function_decl: FNC {isFunction = 1; strcat(v.scope, "function#\0"); init_variables(&fun.paramTable);}
+               type ':' ID {fun.line = yylineno; isFunction = 0;} 
                '(' function_param ')'
                '{' code_block return_value ';' '}' 
                 {
@@ -305,7 +306,7 @@ class_variable: ID
               }
               ;
 
-method_decl_in_class: type ID {fun.line = yylineno; strcpy(fun.name, $2); init_variables(&fun.paramTable);} 
+method_decl_in_class: MTH {isFunction = 1;} type ID {isFunction = 0; fun.line = yylineno; strcpy(fun.name, $4); init_variables(&fun.paramTable);} 
                      '(' method_param ')' 
                      '{' code_block return_value ';' '}' 
                      {
