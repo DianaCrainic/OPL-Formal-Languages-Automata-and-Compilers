@@ -18,7 +18,8 @@ struct Function fun;
 struct Class cl;
 struct EvalExpr expr;
 
-int noErrors = 0;
+int noSyntacticErrors = 0;
+int noSemanticErrors = 1;
 int isFunction = 0;
 
 expr_info* create_int_expr(int value);
@@ -35,7 +36,19 @@ void class_variable_previously_defined(char* className, char* id);
 
 //3.2
 void variable_was_declared(char* id);
-void class_variable_was_declared(VariableTable* arr, char * id);
+void class_variable_was_declared(VariableTable arr, char* id);
+
+//3.4
+int compare_params(struct Variable v1, struct Variable v2);
+void function_was_declared(FunctionTable arr, struct Function fun);
+void method_was_declared(FunctionTable arr, struct Function fun);
+
+//3.5
+void function_previously_defined(char* id);
+void method_previously_defined(char* className, char* id);
+
+//3.6
+int type_of_variable(VariableTable arr, char* id);
 
 %}
 
@@ -75,7 +88,7 @@ void class_variable_was_declared(VariableTable* arr, char * id);
 
 %%
 
-s: progr {printf("No syntactic errors\n"); noErrors = 1;}
+s: progr {printf("No syntactic errors\n"); noSyntacticErrors = 1;}
  ;
 
 progr: declarations main
@@ -119,6 +132,7 @@ var: ID
    | ID '=' ID 
     {
         variable_was_declared($1);
+        variable_previously_defined($3);
         v.line = yylineno;
         v.t.isArray = 0;
         strcpy(v.name, $1);
@@ -159,7 +173,7 @@ subtype: {v.t.isConst = 0;}
        | CONST {v.t.isConst = 1;}
        ;
 
-maintype: INT { if(isFunction == 0) {v.t.mainType = 0;} else {fun.returnType = 0;}}
+maintype: INT {if(isFunction == 0) {v.t.mainType = 0;} else {fun.returnType = 0;}}
         | FLOAT {if(isFunction == 0) {v.t.mainType = 1;} else {fun.returnType = 1;}}
         | CHAR {if(isFunction == 0) {v.t.mainType = 2;} else {fun.returnType = 2;}}
         | STRING {if(isFunction == 0) {v.t.mainType = 3;} else {fun.returnType = 3;}}
@@ -178,15 +192,15 @@ array: array_element
      ;
 
 array_element: value
-             | ID
+             | ID {variable_previously_defined($1);}
              ;
 
 function_decl: FNC {isFunction = 1; strcat(v.scope, "function#\0"); init_variables(&fun.paramTable);}
-               type ':' ID {fun.line = yylineno; isFunction = 0;} 
+               type ':' ID {fun.line = yylineno; isFunction = 0; strcpy(fun.name, $5);}
                '(' function_param ')'
                '{' code_block return_value ';' '}' 
                 {
-                    strcpy(fun.name, $5);
+                    function_was_declared(listOfFunctions, fun);
                     insert_function(&listOfFunctions, fun);
                     free_variables(&fun.paramTable);
                     update_scope();
@@ -275,21 +289,21 @@ class_variable_list: class_variable {insert_variable(&cl.attribTable, v);}',' cl
 
 class_variable: ID
               {
-                class_variable_was_declared(&cl.attribTable, $1);
+                class_variable_was_declared(cl.attribTable, $1);
                 v.line = yylineno;
                 v.t.isArray = 0;
                 strcpy(v.name, $1);
               }
               | ID '=' value 
               {
-                class_variable_was_declared(&cl.attribTable, $1);
+                class_variable_was_declared(cl.attribTable, $1);
                 v.line = yylineno;
                 v.t.isArray = 0;
                 strcpy(v.name, $1);
               }
               | ID '[' INTEGER_NUMBER ']' 
               {
-                class_variable_was_declared(&cl.attribTable, $1);
+                class_variable_was_declared(cl.attribTable, $1);
                 v.line = yylineno;
                 check_array_length($3);
                 v.t.isArray = 1;
@@ -298,7 +312,7 @@ class_variable: ID
               }
               | ID '[' INTEGER_NUMBER ']' '=' '{' '}' 
               {
-                class_variable_was_declared(&cl.attribTable, $1);
+                class_variable_was_declared(cl.attribTable, $1);
                 v.line = yylineno;
                 check_array_length($3);
                 v.t.isArray = 1;
@@ -307,7 +321,7 @@ class_variable: ID
               }
               | ID '[' INTEGER_NUMBER ']' '=' '{' array '}' 
               {
-                class_variable_was_declared(&cl.attribTable, $1);
+                class_variable_was_declared(cl.attribTable, $1);
                 v.line = yylineno;
                 check_array_length($3);
                 v.t.isArray = 1;
@@ -320,6 +334,7 @@ method_decl_in_class: MTH {isFunction = 1;} type ID {isFunction = 0; fun.line = 
                      '(' method_param ')' 
                      '{' code_block return_value ';' '}' 
                      {
+                        method_was_declared(cl.methTable, fun);
                         insert_function(&cl.methTable, fun);
                         free_variables(&fun.paramTable);
                      }
@@ -358,6 +373,11 @@ assign: ID '=' ID
       {
         variable_previously_defined($1);
         variable_previously_defined($3);
+        if (type_of_variable(listOfVariables, $1) != type_of_variable(listOfVariables, $3))
+        {
+            printf("Invalid type of variable (line: %d)\n", yylineno);
+            noSemanticErrors = 0;
+        }
       }
       | ID '.' ID '=' ID 
       {
@@ -430,6 +450,12 @@ assign: ID '=' ID
         check_array_length($8);
         variable_previously_defined($1);
         variable_previously_defined($6);
+
+        if (type_of_variable(listOfVariables, $1) != type_of_variable(listOfVariables, $6))
+        {
+            printf("Invalid type of variable (line: %d)\n", yylineno);
+            noSemanticErrors = 0;
+        }
       }
       | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' 
       {
@@ -454,8 +480,26 @@ assign: ID '=' ID
       }
       ;
 
-call: ID '=' CALL ID '(' call_param ')' {variable_previously_defined($1);}
-    | ID '.' ID '=' CALL ID '(' call_param ')' {class_variable_previously_defined($1, $3);}
+call: ID '=' CALL ID '(' call_param ')' 
+    {
+        variable_previously_defined($1);
+        function_previously_defined($4);
+    }
+    | ID '.' ID '=' CALL ID '(' call_param ')' 
+    {
+        class_variable_previously_defined($1, $3);
+        function_previously_defined($6);
+    }
+    | ID '=' CALL ID '.' ID '(' call_param ')' 
+    {
+        variable_previously_defined($1);
+        method_previously_defined($4, $6);
+    }
+    | ID '.' ID '=' CALL ID '.' ID '(' call_param ')'
+    {
+        class_variable_previously_defined($1, $3);
+        method_previously_defined($6, $8);
+    }
     ;
 
 call_param: 
@@ -576,12 +620,48 @@ eval_result: eval_result '+' eval_result
 //             | LENGTH '(' string_content')'
 //             ;
 
-string_statement: ID '=' string_function {variable_previously_defined($1);}
+string_statement: ID '=' string_function 
+                {
+                    variable_previously_defined($1);
+                    if (type_of_variable(listOfVariables, $1) != 3)
+                    {
+                        printf("Invalid type of variable (line: %d)\n", yylineno);
+                        noSemanticErrors = 0;
+                    }
+                }
+                | ID '=' LENGTH '(' string_content')'
+                {
+                    variable_previously_defined($1);
+                    if (type_of_variable(listOfVariables, $1) != 0)
+                    {
+                        printf("Invalid type of variable (line: %d)\n", yylineno);
+                        noSemanticErrors = 0;
+                    }
+                }
+                | ID '=' COMPARE '(' strings_content ')'
+                {
+                    variable_previously_defined($1);
+                    if (type_of_variable(listOfVariables, $1) != 0)
+                    {
+                        printf("Invalid type of variable (line: %d)\n", yylineno);
+                        noSemanticErrors = 0;
+                    }
+                }
+                | ID '.' ID '=' string_function
+                {
+                    class_variable_previously_defined($1, $3);
+                }
+                | ID '.' ID '=' LENGTH '(' string_content')'
+                {
+                    class_variable_previously_defined($1, $3);
+                }
+                | ID '.' ID '=' COMPARE '(' strings_content ')'
+                {
+                    class_variable_previously_defined($1, $3);
+                }
                 ;
 
 string_function: CONCAT '(' strings_content ')'
-               | LENGTH '(' string_content')'
-               | COMPARE '(' strings_content ')'
                | LOWER '(' string_content ')'
                | UPPER '(' string_content ')'
                ;
@@ -589,9 +669,21 @@ string_function: CONCAT '(' strings_content ')'
 strings_content: string_content ',' string_content 
                ;
 
-string_content: ID {variable_previously_defined($1);}
-              | ID '.' ID {class_variable_previously_defined($1, $3);}
+string_content: ID 
+              {
+                variable_previously_defined($1);
+                if (type_of_variable(listOfVariables, $1) != 3)
+                {
+                    printf("Invalid type of variable (line: %d)\n", yylineno);
+                    noSemanticErrors = 0;
+                }
+              }
+              | ID '.' ID 
+              {
+                class_variable_previously_defined($1, $3);
+              }
               | STRING_VALUE
+              | '(' call ')'
               ;
 
 %%
@@ -657,7 +749,7 @@ void check_array_length(int len)
     if (len <= 0)
     {
         printf("Invalid array length(line: %d)\n", yylineno);
-        exit(1);
+        noSemanticErrors = 0;
     }
 }
 
@@ -668,19 +760,19 @@ void variable_was_declared(char* id)
         if (strcmp(listOfVariables.varTable[i].name, id) == 0)
         {
             printf("Variable %s (line: %d) was already declared (line %d)\n", id, yylineno, listOfVariables.varTable[i].line);
-            exit(2);
+            noSemanticErrors = 0;
         }
     }
 }
 
-void class_variable_was_declared(VariableTable* arr, char* id)
+void class_variable_was_declared(VariableTable arr, char* id)
 {
-    for (int i = 0; i < arr->varNumber; ++i)
+    for (int i = 0; i < arr.varNumber; ++i)
     {
-        if (strcmp(arr->varTable[i].name, id) == 0)
+        if (strcmp(arr.varTable[i].name, id) == 0)
         {
-            printf("Variable %s (line: %d) from class %s was already declared (line %d)\n", id, yylineno, cl.name, arr->varTable[i].line);
-            exit(3);
+            printf("Variable %s (line: %d) from class %s was already declared (line %d)\n", id, yylineno, cl.name, arr.varTable[i].line);
+            noSemanticErrors = 0;
         }
     }
 }
@@ -695,7 +787,7 @@ void variable_previously_defined(char* id)
         }
     }
     printf("Variable %s (line: %d) has not been previously defined\n", id, yylineno);
-    exit(4);
+    noSemanticErrors = 0;
 }
 
 void class_variable_previously_defined(char* className, char* id)
@@ -712,12 +804,142 @@ void class_variable_previously_defined(char* className, char* id)
                 }
             }
             printf("Variable %s (line: %d) from class %s has not been previously defined\n", id, yylineno, className);
-            exit(5);
+            noSemanticErrors = 0;
         }
         return;
     }
     printf("Class %s (line: %d) has not been previously defined\n", className, yylineno);
-    exit(6);
+    noSemanticErrors = 0;
+}
+
+int compare_params(struct Variable v1, struct Variable v2)
+{
+    if (v1.t.mainType != v2.t.mainType)
+    {
+        return 0;
+    }
+    if (v1.t.isConst != v2.t.isConst)
+    {
+        return 0;
+    }
+    if (v1.t.isArray != v2.t.isArray)
+    {
+        return 0;
+    }
+    return 1;
+}
+
+void function_was_declared(FunctionTable arr, struct Function fun)
+{
+    for (int i = 0; i < arr.funcNumber; ++i)
+    {
+        if (strcmp(fun.name, arr.funcTable[i].name) == 0)
+        {
+            if (fun.returnType == arr.funcTable[i].returnType)
+            {
+                if (fun.paramTable.varNumber == arr.funcTable[i].paramTable.varNumber)
+                {
+                    for (int j = 0; j < fun.paramTable.varNumber; ++j)
+                    {
+                        if (compare_params(fun.paramTable.varTable[j], arr.funcTable[i].paramTable.varTable[j]) == 0)
+                        {
+                            return;
+                        }
+                    }
+                    noSemanticErrors = 0;
+                    printf("Function %s (line: %d) was already declared (line: %d)\n", fun.name, yylineno, arr.funcTable[i].line);
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                return;
+            }
+        }
+    }
+}
+
+
+void method_was_declared(FunctionTable arr, struct Function fun)
+{
+    for (int i = 0; i < arr.funcNumber; ++i)
+    {
+        if (strcmp(fun.name, arr.funcTable[i].name) == 0)
+        {
+            if (fun.returnType == arr.funcTable[i].returnType)
+            {
+                if (fun.paramTable.varNumber == arr.funcTable[i].paramTable.varNumber)
+                {
+                    for (int j = 0; j < fun.paramTable.varNumber; ++j)
+                    {
+                        if (compare_params(fun.paramTable.varTable[j], arr.funcTable[i].paramTable.varTable[j]) == 0)
+                        {
+                            return;
+                        }
+                    }
+                    noSemanticErrors = 0;
+                    printf("Method %s (line: %d) from class %s was already declared (line: %d)\n", fun.name, yylineno, cl.name, arr.funcTable[i].line);
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                return;
+            }
+        }
+    }
+}
+
+void function_previously_defined(char* id)
+{
+    for (int i = 0; i < listOfFunctions.funcNumber; ++i)
+    {
+        if (strcmp(listOfFunctions.funcTable[i].name, id) == 0)
+        {
+            return;
+        }
+    }
+    printf("Function %s (line: %d) has not been previously defined\n", id, yylineno);
+    noSemanticErrors = 0;
+}
+
+void method_previously_defined(char* className, char* id)
+{
+    for (int i = 0; i < listOfClasses.classNumber; ++i)
+    {
+        if (strcmp(listOfClasses.classTable[i].name, className) == 0)
+        {
+            for (int j = 0; j < listOfClasses.classTable[i].methTable.funcNumber; ++j)
+            {
+                if (strcmp(listOfClasses.classTable[i].methTable.funcTable[j].name, id) == 0)
+                {
+                    return;
+                }
+            }
+            printf("Method %s (line: %d) from class %s has not been previously defined\n", id, yylineno, className);
+            noSemanticErrors = 0;
+        }
+        return;
+    }
+    printf("Class %s (line: %d) has not been previously defined\n", className, yylineno);
+    noSemanticErrors = 0;
+}
+
+int type_of_variable(VariableTable arr, char* id)
+{
+    for (int i = 0; i < arr.varNumber; ++i)
+    {
+        if (strcmp(arr.varTable[i].name, id) == 0)
+        {
+            return (arr.varTable[i].t.mainType);
+        }
+    }
 }
 
 int yyerror(char *s)
@@ -736,286 +958,288 @@ int main(int argc, char** argv)
 
     yyparse();
 
-    if (noErrors == 1)
+    if (noSyntacticErrors + noSemanticErrors == 2)
     {
+        printf("No semantic errors\n");
+
         for (int i = 0; i < listOfEval.evalNumber; ++i)
         {
             printf("Eval expr(line: %d) with value: %d\n", listOfEval.evalExpressions[i].line, listOfEval.evalExpressions[i].result);
         }
-
-        FILE* f = fopen("symbol_table.txt", "w");
-        fclose(f);
-        f = fopen("symbol_table.txt", "a");
-
-        if (listOfVariables.varNumber > 0)
-        {
-            fprintf(f, "Variables:\n");
-            for (int i = 0; i < listOfVariables.varNumber; ++i)
-            {
-                fprintf(f, "%d) name: %s ", (i + 1), listOfVariables.varTable[i].name);
-                fprintf(f, "|| scope: ");
-                if (strcmp(listOfVariables.varTable[i].scope, "#") == 0)
-                {
-                    fprintf(f, "global ");
-                }
-                else
-                {
-                    fprintf(f, "%s ", listOfVariables.varTable[i].scope);
-                }
-                fprintf(f, "|| type: ");
-                switch (listOfVariables.varTable[i].t.mainType)
-                {
-                    case 0:
-                        fprintf(f, "integer");
-                        break;
-                    case 1:
-                        fprintf(f, "float");
-                        break;
-                    case 2:
-                        fprintf(f, "char");
-                        break;
-                    case 3:
-                        fprintf(f, "string");
-                        break;
-                    case 4:
-                        fprintf(f, "bool");
-                }
-
-                if (listOfVariables.varTable[i].t.isConst == 1)
-                {
-                    fprintf(f, " || const");
-                }
-
-                if (listOfVariables.varTable[i].t.isArray == 1)
-                {
-                    fprintf(f, " || array of length: ");
-                    char str[10];
-                    sprintf(str, "%d", listOfVariables.varTable[i].t.lengthOfArray);
-                    fprintf(f, "%s", str);
-                }
-                fprintf(f, " || line: %d\n", listOfVariables.varTable[i].line);
-            }
-            fprintf(f, "\n\n---------------------\n\n\n");
-        }
-
-        if (listOfFunctions.funcNumber > 0)
-        {
-            fprintf(f, "Functions:\n");
-            for (int i = 0; i < listOfFunctions.funcNumber; ++i)
-            {
-                fprintf(f, "%d) name: %s ", (i + 1), listOfFunctions.funcTable[i].name);
-                fprintf(f, "|| return type: ");
-                switch (listOfFunctions.funcTable[i].returnType)
-                {
-                    case 0:
-                        fprintf(f, "integer");
-                        break;
-                    case 1:
-                        fprintf(f, "float");
-                        break;
-                    case 2:
-                        fprintf(f, "char");
-                        break;
-                    case 3:
-                        fprintf(f, "string");
-                        break;
-                    case 4:
-                        fprintf(f, "bool");
-                }
-                fprintf(f, " || line: %d", listOfFunctions.funcTable[i].line);
-                fprintf(f, " || parameters: ");
-
-                if (listOfFunctions.funcTable[i].paramTable.varNumber > 0)
-                {
-                    fprintf(f, "\n");
-                    for (int j = 0; j < listOfFunctions.funcTable[i].paramTable.varNumber; ++j)
-                    {
-                        fprintf(f, ">>> %d.%d) name: %s ", (i + 1), (j + 1), listOfFunctions.funcTable[i].paramTable.varTable[j].name);
-                        fprintf(f, "|| type: ");
-                        switch (listOfFunctions.funcTable[i].paramTable.varTable[j].t.mainType)
-                        {
-                            case 0:
-                                fprintf(f, "integer");
-                                break;
-                            case 1:
-                                fprintf(f, "float");
-                                break;
-                            case 2:
-                                fprintf(f, "char");
-                                break;
-                            case 3:
-                                fprintf(f, "string");
-                                break;
-                            case 4:
-                                fprintf(f, "bool");
-                                break;
-                            case 5:
-                                fprintf(f, "object");
-                        }
-
-                        if (listOfFunctions.funcTable[i].paramTable.varTable[j].t.isConst == 1)
-                        {
-                            fprintf(f, " || const");
-                        }
-
-                        if (listOfFunctions.funcTable[i].paramTable.varTable[j].t.isArray == 1)
-                        {
-                            fprintf(f, " || array of length: ");
-                            char str[10];
-                            sprintf(str, "%d", listOfFunctions.funcTable[i].paramTable.varTable[j].t.lengthOfArray);
-                            fprintf(f, "%s", str);
-                        }
-                        fprintf(f, "\n");
-                    }
-                }
-                else
-                {
-                    fprintf(f, "no\n");
-                }
-                fprintf(f, "\n");
-            }
-            fprintf(f, "\n\n---------------------\n\n\n");
-        }
-
-        if (listOfClasses.classNumber > 0)
-        {
-            fprintf(f, "Classes: \n");
-            for (int i = 0; i < listOfClasses.classNumber; ++i)
-            {
-                fprintf(f, "%d) name: %s", (i + 1), listOfClasses.classTable[i].name);
-                fprintf(f, " || line: %d\n", listOfClasses.classTable[i].line);
-                fprintf(f, "***variables: ");
-                if (listOfClasses.classTable[i].attribTable.varNumber > 0)
-                {
-                    fprintf(f, "\n");
-                    for (int j = 0; j < listOfClasses.classTable[i].attribTable.varNumber; ++j)
-                    {
-                        fprintf(f, ">>>>>> %d.%d) name: %s ", (i + 1), (j + 1), listOfClasses.classTable[i].attribTable.varTable[j].name);
-                        fprintf(f, "|| type: ");
-                        switch (listOfClasses.classTable[i].attribTable.varTable[j].t.mainType)
-                        {
-                            case 0:
-                                fprintf(f, "integer");
-                                break;
-                            case 1:
-                                fprintf(f, "float");
-                                break;
-                            case 2:
-                                fprintf(f, "char");
-                                break;
-                            case 3:
-                                fprintf(f, "string");
-                                break;
-                            case 4:
-                                fprintf(f, "bool");
-                                break;
-                        }
-
-                        if (listOfClasses.classTable[i].attribTable.varTable[j].t.isConst == 1)
-                        {
-                            fprintf(f, " || const");
-                        }
-
-                        if (listOfClasses.classTable[i].attribTable.varTable[j].t.isArray == 1)
-                        {
-                            fprintf(f, " || array of length: ");
-                            char str[10];
-                            sprintf(str, "%d", listOfClasses.classTable[i].attribTable.varTable[j].t.lengthOfArray);
-                            fprintf(f, "%s", str);
-                        }
-                        fprintf(f, " || line: %d\n", listOfClasses.classTable[i].attribTable.varTable[j].line);
-                    }
-                }
-                else
-                {
-                    fprintf(f, "no\n");
-                }
-
-                fprintf(f, "***methods: ");
-                if (listOfClasses.classTable[i].methTable.funcNumber > 0)
-                {
-                    fprintf(f, "\n");
-                    for (int j = 0; j < listOfClasses.classTable[i].methTable.funcNumber; ++j)
-                    {
-                        fprintf(f, ">>>>>> %d.%d) name: %s ", (i + 1), (j + 1), listOfClasses.classTable[i].methTable.funcTable[j].name);
-                        fprintf(f, "|| return type: ");
-                        switch (listOfClasses.classTable[i].methTable.funcTable[j].returnType)
-                        {
-                            case 0:
-                                fprintf(f, "integer");
-                                break;
-                            case 1:
-                                fprintf(f, "float");
-                                break;
-                            case 2:
-                                fprintf(f, "char");
-                                break;
-                            case 3:
-                                fprintf(f, "string");
-                                break;
-                            case 4:
-                                fprintf(f, "bool");
-                        }
-                        fprintf(f, " || line: %d", listOfClasses.classTable[i].methTable.funcTable[j].line);
-                        fprintf(f, " || parameters: ");
-                        if (listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varNumber > 0)
-                        {
-                            fprintf(f, "\n");
-                            for (int k = 0; k < listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varNumber; ++k)
-                            {
-                                fprintf(f, ">>>>>>>>> %d.%d.%d) name: %s ", (i + 1), (j + 1), (k + 1), listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varTable[k].name);
-                                fprintf(f, "|| type: ");
-                                switch (listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varTable[k].t.mainType)
-                                {
-                                    case 0:
-                                        fprintf(f, "integer");
-                                        break;
-                                    case 1:
-                                        fprintf(f, "float");
-                                        break;
-                                    case 2:
-                                        fprintf(f, "char");
-                                        break;
-                                    case 3:
-                                        fprintf(f, "string");
-                                        break;
-                                    case 4:
-                                        fprintf(f, "bool");
-                                        break;
-                                }
-
-                                if (listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varTable[k].t.isConst == 1)
-                                {
-                                    fprintf(f, " || const ");
-                                }
-
-                                if (listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varTable[k].t.isArray == 1)
-                                {
-                                    fprintf(f, " || array of length: ");
-                                    char str[10];
-                                    sprintf(str, "%d", listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varTable[k].t.lengthOfArray);
-                                    fprintf(f, "%s", str);
-                                }
-                                fprintf(f, "\n");
-                            }
-                        }
-                        else
-                        {
-                            fprintf(f, "no\n");
-                        }
-                    }
-                }
-                else
-                {
-                    fprintf(f, "no\n");
-                }
-                fprintf(f, "\n");
-            }
-            fprintf(f, "\n\n---------------------\n\n\n");
-        }
-
-        fclose(f);
     }
+
+    FILE* f = fopen("symbol_table.txt", "w");
+    fclose(f);
+    f = fopen("symbol_table.txt", "a");
+
+    if (listOfVariables.varNumber > 0)
+    {
+        fprintf(f, "Variables:\n");
+        for (int i = 0; i < listOfVariables.varNumber; ++i)
+        {
+            fprintf(f, "%d) name: %s ", (i + 1), listOfVariables.varTable[i].name);
+            fprintf(f, "|| scope: ");
+            if (strcmp(listOfVariables.varTable[i].scope, "#") == 0)
+            {
+                fprintf(f, "global ");
+            }
+            else
+            {
+                fprintf(f, "%s ", listOfVariables.varTable[i].scope);
+            }
+            fprintf(f, "|| type: ");
+            switch (listOfVariables.varTable[i].t.mainType)
+            {
+                case 0:
+                    fprintf(f, "integer");
+                    break;
+                case 1:
+                    fprintf(f, "float");
+                    break;
+                case 2:
+                    fprintf(f, "char");
+                    break;
+                case 3:
+                    fprintf(f, "string");
+                    break;
+                case 4:
+                    fprintf(f, "bool");
+            }
+
+            if (listOfVariables.varTable[i].t.isConst == 1)
+            {
+                fprintf(f, " || const");
+            }
+
+            if (listOfVariables.varTable[i].t.isArray == 1)
+            {
+                fprintf(f, " || array of length: ");
+                char str[10];
+                sprintf(str, "%d", listOfVariables.varTable[i].t.lengthOfArray);
+                fprintf(f, "%s", str);
+            }
+            fprintf(f, " || line: %d\n", listOfVariables.varTable[i].line);
+        }
+        fprintf(f, "\n\n---------------------\n\n\n");
+    }
+
+    if (listOfFunctions.funcNumber > 0)
+    {
+        fprintf(f, "Functions:\n");
+        for (int i = 0; i < listOfFunctions.funcNumber; ++i)
+        {
+            fprintf(f, "%d) name: %s ", (i + 1), listOfFunctions.funcTable[i].name);
+            fprintf(f, "|| return type: ");
+            switch (listOfFunctions.funcTable[i].returnType)
+            {
+                case 0:
+                    fprintf(f, "integer");
+                    break;
+                case 1:
+                    fprintf(f, "float");
+                    break;
+                case 2:
+                    fprintf(f, "char");
+                    break;
+                case 3:
+                    fprintf(f, "string");
+                    break;
+                case 4:
+                    fprintf(f, "bool");
+            }
+            fprintf(f, " || line: %d", listOfFunctions.funcTable[i].line);
+            fprintf(f, " || parameters: ");
+
+            if (listOfFunctions.funcTable[i].paramTable.varNumber > 0)
+            {
+                fprintf(f, "\n");
+                for (int j = 0; j < listOfFunctions.funcTable[i].paramTable.varNumber; ++j)
+                {
+                    fprintf(f, ">>> %d.%d) name: %s ", (i + 1), (j + 1), listOfFunctions.funcTable[i].paramTable.varTable[j].name);
+                    fprintf(f, "|| type: ");
+                    switch (listOfFunctions.funcTable[i].paramTable.varTable[j].t.mainType)
+                    {
+                        case 0:
+                            fprintf(f, "integer");
+                            break;
+                        case 1:
+                            fprintf(f, "float");
+                            break;
+                        case 2:
+                            fprintf(f, "char");
+                            break;
+                        case 3:
+                            fprintf(f, "string");
+                            break;
+                        case 4:
+                            fprintf(f, "bool");
+                            break;
+                        case 5:
+                            fprintf(f, "object");
+                    }
+
+                    if (listOfFunctions.funcTable[i].paramTable.varTable[j].t.isConst == 1)
+                    {
+                        fprintf(f, " || const");
+                    }
+
+                    if (listOfFunctions.funcTable[i].paramTable.varTable[j].t.isArray == 1)
+                    {
+                        fprintf(f, " || array of length: ");
+                        char str[10];
+                        sprintf(str, "%d", listOfFunctions.funcTable[i].paramTable.varTable[j].t.lengthOfArray);
+                        fprintf(f, "%s", str);
+                    }
+                    fprintf(f, "\n");
+                }
+            }
+            else
+            {
+                fprintf(f, "no\n");
+            }
+            fprintf(f, "\n");
+        }
+        fprintf(f, "\n\n---------------------\n\n\n");
+    }
+
+    if (listOfClasses.classNumber > 0)
+    {
+        fprintf(f, "Classes: \n");
+        for (int i = 0; i < listOfClasses.classNumber; ++i)
+        {
+            fprintf(f, "%d) name: %s", (i + 1), listOfClasses.classTable[i].name);
+            fprintf(f, " || line: %d\n", listOfClasses.classTable[i].line);
+            fprintf(f, "***variables: ");
+            if (listOfClasses.classTable[i].attribTable.varNumber > 0)
+            {
+                fprintf(f, "\n");
+                for (int j = 0; j < listOfClasses.classTable[i].attribTable.varNumber; ++j)
+                {
+                    fprintf(f, ">>>>>> %d.%d) name: %s ", (i + 1), (j + 1), listOfClasses.classTable[i].attribTable.varTable[j].name);
+                    fprintf(f, "|| type: ");
+                    switch (listOfClasses.classTable[i].attribTable.varTable[j].t.mainType)
+                    {
+                        case 0:
+                            fprintf(f, "integer");
+                            break;
+                        case 1:
+                            fprintf(f, "float");
+                            break;
+                        case 2:
+                            fprintf(f, "char");
+                            break;
+                        case 3:
+                            fprintf(f, "string");
+                            break;
+                        case 4:
+                            fprintf(f, "bool");
+                            break;
+                    }
+
+                    if (listOfClasses.classTable[i].attribTable.varTable[j].t.isConst == 1)
+                    {
+                        fprintf(f, " || const");
+                    }
+
+                    if (listOfClasses.classTable[i].attribTable.varTable[j].t.isArray == 1)
+                    {
+                        fprintf(f, " || array of length: ");
+                        char str[10];
+                        sprintf(str, "%d", listOfClasses.classTable[i].attribTable.varTable[j].t.lengthOfArray);
+                        fprintf(f, "%s", str);
+                    }
+                    fprintf(f, " || line: %d\n", listOfClasses.classTable[i].attribTable.varTable[j].line);
+                }
+            }
+            else
+            {
+                fprintf(f, "no\n");
+            }
+
+            fprintf(f, "***methods: ");
+            if (listOfClasses.classTable[i].methTable.funcNumber > 0)
+            {
+                fprintf(f, "\n");
+                for (int j = 0; j < listOfClasses.classTable[i].methTable.funcNumber; ++j)
+                {
+                    fprintf(f, ">>>>>> %d.%d) name: %s ", (i + 1), (j + 1), listOfClasses.classTable[i].methTable.funcTable[j].name);
+                    fprintf(f, "|| return type: ");
+                    switch (listOfClasses.classTable[i].methTable.funcTable[j].returnType)
+                    {
+                        case 0:
+                            fprintf(f, "integer");
+                            break;
+                        case 1:
+                            fprintf(f, "float");
+                            break;
+                        case 2:
+                            fprintf(f, "char");
+                            break;
+                        case 3:
+                            fprintf(f, "string");
+                            break;
+                        case 4:
+                            fprintf(f, "bool");
+                    }
+                    fprintf(f, " || line: %d", listOfClasses.classTable[i].methTable.funcTable[j].line);
+                    fprintf(f, " || parameters: ");
+                    if (listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varNumber > 0)
+                    {
+                        fprintf(f, "\n");
+                        for (int k = 0; k < listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varNumber; ++k)
+                        {
+                            fprintf(f, ">>>>>>>>> %d.%d.%d) name: %s ", (i + 1), (j + 1), (k + 1), listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varTable[k].name);
+                            fprintf(f, "|| type: ");
+                            switch (listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varTable[k].t.mainType)
+                            {
+                                case 0:
+                                    fprintf(f, "integer");
+                                    break;
+                                case 1:
+                                    fprintf(f, "float");
+                                    break;
+                                case 2:
+                                    fprintf(f, "char");
+                                    break;
+                                case 3:
+                                    fprintf(f, "string");
+                                    break;
+                                case 4:
+                                    fprintf(f, "bool");
+                                    break;
+                            }
+
+                            if (listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varTable[k].t.isConst == 1)
+                            {
+                                fprintf(f, " || const ");
+                            }
+
+                            if (listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varTable[k].t.isArray == 1)
+                            {
+                                fprintf(f, " || array of length: ");
+                                char str[10];
+                                sprintf(str, "%d", listOfClasses.classTable[i].methTable.funcTable[j].paramTable.varTable[k].t.lengthOfArray);
+                                fprintf(f, "%s", str);
+                            }
+                            fprintf(f, "\n");
+                        }
+                    }
+                    else
+                    {
+                        fprintf(f, "no\n");
+                    }
+                }
+            }
+            else
+            {
+                fprintf(f, "no\n");
+            }
+            fprintf(f, "\n");
+        }
+        fprintf(f, "\n\n---------------------\n\n\n");
+    }
+
+    fclose(f);
 
     free_variables(&listOfVariables);
     free_functions(&listOfFunctions);

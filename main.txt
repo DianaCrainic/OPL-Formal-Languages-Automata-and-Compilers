@@ -1,6 +1,6 @@
 begin_declarations
 
-int a = 5, c = true;
+char a = 5, c = true;
 
 float z, w;
 
@@ -67,6 +67,11 @@ function string : str(string z)
 	return a2;
 }
 
+function string : str(string a, string b)
+{
+	return a2;
+}
+
 class Test 
 {
 	int a1;
@@ -78,6 +83,13 @@ class Test
 		aaa = 2;
 		return a2;
 	}
+
+	/*
+	method int abc()
+	{
+		return 2;
+	}
+	*/
 }
 
 class test2
@@ -94,6 +106,8 @@ function char : g()
 {
 	return;
 }
+
+string s1, s2;
 
 
 end_declarations
@@ -127,7 +141,7 @@ for (int i = 1; i < 3; i = i + 1)
 
 a = call example(a,b,c);
 
-aaa = call ab(2 * d + (a = call l(1,2,aaa) ), b*c*(a = call v() ));
+aaa = call abc(2 * d + (a = call abc(1,2,aaa) ), b*c*(a = call str() ));
 
 d = "abc";
 
@@ -135,7 +149,7 @@ d.c = 2;
 
 a.prt = "abc";
 
-a = call f(2.14, (a = call b(2*4, c, d.v) ));
+a = call Example.proc (2.14, (a = call Test.abc (2*4, c, d.v) ));
 
 while i > 3 do
 {
@@ -146,11 +160,11 @@ while i > 3 do
 Eval(5 + 2 / 4 - -3 + 5 * 2);
 Eval(3 + 5);
 
-a = concat(b, c);
-c = length("abcd");
-a = compare(b, c);
-a = lower(c);
-b = upper(c);
+s1 = concat(s1, s2);
+a2 = length("abcd");
+a2 = compare(s1, s2);
+s2 = lower(s1);
+s1 = upper(s2);
 
 
 end_main
