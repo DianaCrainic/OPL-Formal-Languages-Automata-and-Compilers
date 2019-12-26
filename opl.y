@@ -21,6 +21,8 @@ struct EvalExpr expr;
 int noSyntacticErrors = 0;
 int noSemanticErrors = 1;
 int isFunction = 0;
+int arithmeticExprType = -2;
+int returnType;
 
 expr_info* create_int_expr(int value);
 expr_info* create_str_expr(char* value1, char* value2);
@@ -28,7 +30,6 @@ void free_expr(expr_info* expr);
 void print_expr(expr_info* expr);
 
 void update_scope();
-void check_array_length(int len);
 
 //3.1
 void variable_previously_defined(char* id);
@@ -37,6 +38,14 @@ void class_variable_previously_defined(char* className, char* id);
 //3.2
 void variable_was_declared(char* id);
 void class_variable_was_declared(VariableTable arr, char* id);
+
+//3.3
+int variable_is_init(VariableTable arr, char* id);
+int class_variable_is_init(ClassTable arr, char* className, char* id);
+void set_init_variable(VariableTable* arr, char* id);
+void set_init_class_variable(ClassTable* arr, char* className, char* id);
+void check_variable_is_init(VariableTable arr, char* id);
+void check_class_variable_is_init(ClassTable arr, char* className, char* id);
 
 //3.4
 int compare_params(struct Variable v1, struct Variable v2);
@@ -48,7 +57,22 @@ void function_previously_defined(char* id);
 void method_previously_defined(char* className, char* id);
 
 //3.6
+int leftType, rightType, valueType;
 int type_of_variable(VariableTable arr, char* id);
+int type_of_class_variable(ClassTable arr, char* className, char* id);
+int type_of_return_function(FunctionTable arr, char* id);
+int type_of_return_method(ClassTable arr, char* className, char* id);
+void different_types();
+
+//3.7
+
+
+//extra
+void check_array_length(int len);
+int variable_is_const(VariableTable arr, char* id);
+int class_variable_is_const(ClassTable arr, char* className, char* id);
+void check_variable_is_const(VariableTable arr, char* id);
+void check_class_variable_is_const(ClassTable arr, char* className, char* id);
 
 %}
 
@@ -118,53 +142,80 @@ variable_list: var {insert_variable(&listOfVariables, v);} ',' variable_list
 var: ID 
     {
         variable_was_declared($1);
+        if (v.t.isConst == 1)
+        {
+            printf("Const variable %s (line: %d) must be initialized\n", $1, yylineno);
+            noSemanticErrors = 0;
+        }
+        v.t.isInit = 0;
         v.line = yylineno;
         v.t.isArray = 0;
         strcpy(v.name, $1);
     }
-   | ID '=' value 
+    | ID '=' value
     {
         variable_was_declared($1);
+        leftType = v.t.mainType;
+        if (leftType != valueType)
+        {
+            different_types();
+        }
+        v.t.isInit = 1;
         v.line = yylineno;
         v.t.isArray = 0;
         strcpy(v.name, $1);
     }
-   | ID '=' ID 
+    | ID '=' ID
     {
         variable_was_declared($1);
         variable_previously_defined($3);
+        check_variable_is_init(listOfVariables, $3);
+        leftType = v.t.mainType;
+        if (leftType != type_of_variable(listOfVariables, $3))
+        {
+            different_types();
+        }
+        v.t.isInit = 1;
         v.line = yylineno;
         v.t.isArray = 0;
         strcpy(v.name, $1);
     }
-   | ID '[' INTEGER_NUMBER ']' 
+    | ID '[' INTEGER_NUMBER ']'
     {
         variable_was_declared($1);
-        v.line = yylineno;
         check_array_length($3);
+        v.line = yylineno;
+        if (v.t.isConst == 1)
+        {
+            printf("Const variable %s (line: %d) must be initialized\n", $1, v.line);
+            noSemanticErrors = 0;
+        }
+        v.t.isInit = 0;
         v.t.isArray = 1;
         v.t.lengthOfArray = $3;
         strcpy(v.name, $1);
     }
-   | ID '[' INTEGER_NUMBER ']' '=' '{' '}' 
+    | ID '[' INTEGER_NUMBER ']' '=' '{' '}'
     {
         variable_was_declared($1);
         v.line = yylineno;
         check_array_length($3);
+        v.t.isInit = 1;
         v.t.isArray = 1;
         v.t.lengthOfArray = $3;
         strcpy(v.name, $1);
     }
-   | ID '[' INTEGER_NUMBER ']' '=' '{' array '}' 
+    | ID '[' INTEGER_NUMBER ']' '=' '{' array '}'
     {
         variable_was_declared($1);
         v.line = yylineno;
         check_array_length($3);
+        v.t.isInit = 1;
         v.t.isArray = 1;
         v.t.lengthOfArray = $3;
         strcpy(v.name, $1);
     }
-   ;
+    ;
 
 type: subtype maintype
     ;
@@ -180,11 +231,11 @@ maintype: INT {if(isFunction == 0) {v.t.mainType = 0;} else {fun.returnType = 0;
         | BOOL {if(isFunction == 0) {v.t.mainType = 4;} else {fun.returnType = 4;}}
         ;
 
-value: INTEGER_NUMBER
-     | FLOAT_NUMBER
-     | STRING_VALUE
-     | BOOL_VALUE
-     | CHAR_VALUE
+value: INTEGER_NUMBER {valueType = 0;}
+     | FLOAT_NUMBER {valueType = 1;}
+     | CHAR_VALUE {valueType = 2;}
+     | STRING_VALUE {valueType = 3;}
+     | BOOL_VALUE {valueType = 4;}
      ;
 
 array: array_element
@@ -192,7 +243,23 @@ array: array_element
      ;
 
 array_element: value
-             | ID {variable_previously_defined($1);}
+             {
+                leftType = v.t.mainType;
+                if (leftType != valueType)
+                {
+                    different_types();
+                }
+             }
+             | ID 
+             {
+                variable_previously_defined($1);
+                check_variable_is_init(listOfVariables, $1);
+                leftType = v.t.mainType;
+                if (leftType != type_of_variable(listOfVariables, $1))
+                {
+                    different_types();
+                }
+             }
              ;
 
 function_decl: FNC {isFunction = 1; strcat(v.scope, "function#\0"); init_variables(&fun.paramTable);}
@@ -222,6 +289,11 @@ variable: type ID
         }
         | type ID '=' value
         {
+            leftType = v.t.mainType;
+            if (leftType != valueType)
+            {
+                different_types();
+            }
             v.t.isArray = 0;
             strcpy(v.name, $2);
         }
@@ -239,7 +311,7 @@ variable: type ID
             v.t.lengthOfArray = $4;
             strcpy(v.name, $2);
         }
-        | type ID '[' INTEGER_NUMBER ']' '=' '{' array '}' 
+        | type ID '[' INTEGER_NUMBER ']' '=' '{' array '}'
         {
             check_array_length($4);
             v.t.isArray = 1;
@@ -262,7 +334,7 @@ class_decl: CLASS ID
                 init_variables(&cl.attribTable);
                 init_functions(&cl.methTable);
             } 
-            '{' class_content '}' 
+            '{' class_content '}'
             {
                 insert_class(&listOfClasses, cl);
                 free_functions(&cl.methTable);
@@ -290,22 +362,40 @@ class_variable_list: class_variable {insert_variable(&cl.attribTable, v);}',' cl
 class_variable: ID
               {
                 class_variable_was_declared(cl.attribTable, $1);
+                if (v.t.isConst == 1)
+                {
+                    printf("Const variable %s (line: %d) must be initialized\n", $1, yylineno);
+                    noSemanticErrors = 0;
+                }
                 v.line = yylineno;
+                v.t.isInit = 0;
                 v.t.isArray = 0;
                 strcpy(v.name, $1);
               }
               | ID '=' value 
               {
                 class_variable_was_declared(cl.attribTable, $1);
+                leftType = v.t.mainType;
+                if (leftType != valueType)
+                {
+                   different_types();
+                }
                 v.line = yylineno;
+                v.t.isInit = 1;
                 v.t.isArray = 0;
                 strcpy(v.name, $1);
               }
-              | ID '[' INTEGER_NUMBER ']' 
+              | ID '[' INTEGER_NUMBER ']'
               {
                 class_variable_was_declared(cl.attribTable, $1);
-                v.line = yylineno;
                 check_array_length($3);
+                v.line = yylineno;
+                if (v.t.isConst == 1)
+                {
+                    printf("Const variable %s (line: %d) must be initialized\n", $1, v.line);
+                    noSemanticErrors = 0;
+                }
+                v.t.isInit = 0;
                 v.t.isArray = 1;
                 v.t.lengthOfArray = $3;
                 strcpy(v.name, $1);
@@ -315,6 +405,7 @@ class_variable: ID
                 class_variable_was_declared(cl.attribTable, $1);
                 v.line = yylineno;
                 check_array_length($3);
+                v.t.isInit = 1;
                 v.t.isArray = 1;
                 v.t.lengthOfArray = $3;
                 strcpy(v.name, $1);
@@ -324,6 +415,7 @@ class_variable: ID
                 class_variable_was_declared(cl.attribTable, $1);
                 v.line = yylineno;
                 check_array_length($3);
+                v.t.isInit = 1;
                 v.t.isArray = 1;
                 v.t.lengthOfArray = $3;
                 strcpy(v.name, $1);
@@ -350,7 +442,23 @@ list_of_method_param: type class_variable {insert_variable(&fun.paramTable, v);}
 
 return_value: RET
             | RET value
-            | RET ID {variable_previously_defined($2);}
+            {
+                if (fun.returnType != valueType)
+                {
+                    printf("Invalid return type (line: %d)\n", yylineno);
+                    noSemanticErrors = 0;
+                }
+            }
+            | RET ID 
+            {
+                variable_previously_defined($2);
+                check_variable_is_init(listOfVariables, $2);
+                if (fun.returnType != type_of_variable(listOfVariables, $2))
+                {
+                    printf("Invalid return type (line: %d)\n", yylineno);
+                    noSemanticErrors = 0;
+                }
+            }
             ;
 
 main: BEGIN_MAIN {strcat(v.scope, "main#\0");} main_content END_MAIN
@@ -373,76 +481,179 @@ assign: ID '=' ID
       {
         variable_previously_defined($1);
         variable_previously_defined($3);
+        check_variable_is_init(listOfVariables, $3);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
+
         if (type_of_variable(listOfVariables, $1) != type_of_variable(listOfVariables, $3))
         {
-            printf("Invalid type of variable (line: %d)\n", yylineno);
-            noSemanticErrors = 0;
+            different_types();
         }
       }
       | ID '.' ID '=' ID 
       {
         variable_previously_defined($5);
         class_variable_previously_defined($1, $3);
+        check_variable_is_init(listOfVariables, $5);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if (type_of_class_variable(listOfClasses, $1, $3) != type_of_variable(listOfVariables, $5))
+        {
+            different_types();
+        }
       }
       | ID '=' ID '.' ID
       {
         variable_previously_defined($1);
         class_variable_previously_defined($3, $5);
+        check_class_variable_is_init(listOfClasses, $3, $5);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
+
+        if (type_of_variable(listOfVariables, $1) != type_of_class_variable(listOfClasses, $3, $5))
+        {
+            different_types();
+        }
       }
       | ID '.' ID '=' ID '.' ID 
       {
         class_variable_previously_defined($1, $3);
         class_variable_previously_defined($5, $7);
+        check_class_variable_is_init(listOfClasses, $5, $7);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if (type_of_class_variable(listOfClasses, $1, $3) != type_of_class_variable(listOfClasses, $5, $7))
+        {
+            different_types();
+        }
       }
       | ID '=' value 
       {
         variable_previously_defined($1);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
+
+        if (type_of_variable(listOfVariables, $1) != valueType)
+        {
+            different_types();
+        }
       }
       | ID '.' ID '=' value 
       {
         class_variable_previously_defined($1, $3);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if (type_of_class_variable(listOfClasses, $1, $3) != valueType)
+        {
+            different_types();
+        }
       }
       | ID '=' arithmetic_expression 
       {
         variable_previously_defined($1);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
+
+        if (type_of_variable(listOfVariables, $1) != arithmeticExprType)
+        {
+            different_types();
+        }
+        arithmeticExprType = -2;
       }
-      | ID '.' ID '=' arithmetic_expression 
+      | ID '.' ID '=' arithmetic_expression
       {
         class_variable_previously_defined($1, $3);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if (type_of_class_variable(listOfClasses, $1, $3) != arithmeticExprType)
+        {
+            different_types();
+        }
+        arithmeticExprType = -2;
       }
       | ID '[' INTEGER_NUMBER ']' '=' value 
       {
         check_array_length($3);
         variable_previously_defined($1);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
+
+        if (type_of_variable(listOfVariables, $1) != valueType)
+        {
+            different_types();
+        }
       }
       | ID '.' ID '[' INTEGER_NUMBER ']' '=' value 
       {
         check_array_length($5);
         class_variable_previously_defined($1, $3);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if (type_of_class_variable(listOfClasses, $1, $3) != valueType)
+        {
+            different_types();
+        }
       }
       | ID '[' INTEGER_NUMBER ']' '=' ID 
       {
         check_array_length($3); 
         variable_previously_defined($1); 
         variable_previously_defined($6);
+        check_variable_is_init(listOfVariables, $6);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
+
+        if (type_of_variable(listOfVariables, $1) != type_of_variable(listOfVariables, $6))
+        {
+            different_types();
+        }
       }
       | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID 
       {
         check_array_length($5);
         variable_previously_defined($8);
         class_variable_previously_defined($1, $3);
+        check_variable_is_init(listOfVariables, $8);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if (type_of_class_variable(listOfClasses, $1, $3) != type_of_variable(listOfVariables, $8))
+        {
+            different_types();
+        }
       }
       | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID 
       {
         check_array_length($3);
         variable_previously_defined($1);
         class_variable_previously_defined($6, $8);
+        check_class_variable_is_init(listOfClasses, $6, $8);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
+
+        if (type_of_variable(listOfVariables, $1) != type_of_class_variable(listOfClasses, $6, $8))
+        {
+            different_types();
+        }
       }
       | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID 
       {
         check_array_length($5);
         class_variable_previously_defined($1, $3);
         class_variable_previously_defined($8, $10);
+        check_class_variable_is_init(listOfClasses, $8, $10);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if (type_of_class_variable(listOfClasses, $1, $3) != type_of_class_variable(listOfClasses, $8, $10))
+        {
+            different_types();
+        }
       }
       | ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']' 
       {
@@ -450,11 +661,13 @@ assign: ID '=' ID
         check_array_length($8);
         variable_previously_defined($1);
         variable_previously_defined($6);
+        check_variable_is_init(listOfVariables, $6);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
 
         if (type_of_variable(listOfVariables, $1) != type_of_variable(listOfVariables, $6))
         {
-            printf("Invalid type of variable (line: %d)\n", yylineno);
-            noSemanticErrors = 0;
+            different_types();
         }
       }
       | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' 
@@ -463,6 +676,14 @@ assign: ID '=' ID
         check_array_length($10); 
         variable_previously_defined($1);
         class_variable_previously_defined($6, $8);
+        check_class_variable_is_init(listOfClasses, $6, $8);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
+
+        if (type_of_variable(listOfVariables, $1) != type_of_class_variable(listOfClasses, $6, $8))
+        {
+            different_types();
+        }
       }
       | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']' 
       {
@@ -470,6 +691,14 @@ assign: ID '=' ID
         check_array_length($10);
         variable_previously_defined($8);
         class_variable_previously_defined($1, $3);
+        check_variable_is_init(listOfVariables, $8);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if (type_of_class_variable(listOfClasses, $1, $3) != type_of_variable(listOfVariables, $8))
+        {
+            different_types();
+        }
       }
       | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' 
       {
@@ -477,28 +706,68 @@ assign: ID '=' ID
         check_array_length($12);
         class_variable_previously_defined($1, $3);
         class_variable_previously_defined($8, $10);
+        check_class_variable_is_init(listOfClasses, $8, $10);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if (type_of_class_variable(listOfClasses, $1, $3) != type_of_class_variable(listOfClasses, $8, $10))
+        {
+            different_types();
+        }
       }
       ;
 
-call: ID '=' CALL ID '(' call_param ')' 
+call: ID '=' CALL ID '(' call_param ')'
     {
         variable_previously_defined($1);
         function_previously_defined($4);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
+
+        if (type_of_variable(listOfVariables, $1) != type_of_return_function(listOfFunctions, $4))
+        {
+            different_types();
+        }
+        returnType = type_of_return_function(listOfFunctions, $4);
     }
     | ID '.' ID '=' CALL ID '(' call_param ')' 
     {
         class_variable_previously_defined($1, $3);
         function_previously_defined($6);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if(type_of_class_variable(listOfClasses, $1, $3) != type_of_return_function(listOfFunctions, $6))
+        {
+            different_types();
+        }
+        returnType = type_of_return_function(listOfFunctions, $6);
     }
     | ID '=' CALL ID '.' ID '(' call_param ')' 
     {
         variable_previously_defined($1);
         method_previously_defined($4, $6);
+        set_init_variable(&listOfVariables, $1);
+        check_variable_is_const(listOfVariables, $1);
+
+        if(type_of_variable(listOfVariables, $1) != type_of_return_method(listOfClasses, $4, $6))
+        {
+            different_types();
+        }
+        returnType = type_of_return_method(listOfClasses, $4, $6);
     }
     | ID '.' ID '=' CALL ID '.' ID '(' call_param ')'
     {
         class_variable_previously_defined($1, $3);
         method_previously_defined($6, $8);
+        set_init_class_variable(&listOfClasses, $1, $3);
+        check_class_variable_is_const(listOfClasses, $1, $3);
+
+        if(type_of_class_variable(listOfClasses, $1, $3) != type_of_return_method(listOfClasses, $6, $8))
+        {
+            different_types();
+        }
+        returnType = type_of_return_method(listOfClasses, $6, $8);
     }
     ;
 
@@ -511,8 +780,8 @@ list_call_param: param
                ;
 
 param: value
-     | ID {variable_previously_defined($1);}
-     | ID '.' ID {class_variable_previously_defined($1, $3);}
+     | ID {variable_previously_defined($1); check_variable_is_init(listOfVariables, $1);}
+     | ID '.' ID {class_variable_previously_defined($1, $3); check_class_variable_is_init(listOfClasses, $1, $3);}
      | arithmetic_expression
      | '(' call ')'
      | string_function
@@ -523,9 +792,71 @@ arithmetic_expression: operand operator operand
                      ;
 
 operand: value
-       | ID {variable_previously_defined($1);}
-       | ID '.' ID {class_variable_previously_defined($1, $3);}
+       {
+            if (arithmeticExprType != -1)
+            {
+                if (arithmeticExprType == -2)
+                {
+                    arithmeticExprType = valueType;
+                }
+
+                if (arithmeticExprType != valueType)
+                {
+                    arithmeticExprType = -1;
+                }
+            }
+       }
+       | ID 
+       {
+            variable_previously_defined($1);
+            check_variable_is_init(listOfVariables, $1);
+
+            if (arithmeticExprType != -1)
+            { 
+                if (arithmeticExprType == -2)
+                {
+                    arithmeticExprType = type_of_variable(listOfVariables, $1);
+                }
+
+                if (arithmeticExprType != type_of_variable(listOfVariables, $1))
+                {
+                    arithmeticExprType = -1;
+                }
+            }
+       }
+       | ID '.' ID 
+       {
+            class_variable_previously_defined($1, $3);
+            check_class_variable_is_init(listOfClasses, $1, $3);
+
+            if (arithmeticExprType != -1)
+            {
+                if (arithmeticExprType == -2)
+                {
+                    arithmeticExprType = type_of_class_variable(listOfClasses, $1, $3);
+                }
+
+                if (arithmeticExprType != type_of_class_variable(listOfClasses, $1, $3))
+                {
+                    arithmeticExprType = -1;
+                }
+            }
+       }
        | '(' call ')'
+       {
+            if (arithmeticExprType != -1)
+            {
+                if (arithmeticExprType == -2)
+                {
+                    arithmeticExprType = returnType;
+                }
+
+                if (arithmeticExprType != returnType)
+                {
+                    arithmeticExprType = -1;
+                }
+            }
+       }
        ;
 
 operator : '+'
@@ -551,9 +882,9 @@ condition: condition '<' condition
          | condition AND condition
          | '(' call ')'
          | value
-         | ID {variable_previously_defined($1);}
-         | ID '.' ID {class_variable_previously_defined($1, $3);}
-         | arithmetic_expression
+         | ID {variable_previously_defined($1); check_variable_is_init(listOfVariables, $1);}
+         | ID '.' ID {class_variable_previously_defined($1, $3); check_class_variable_is_init(listOfClasses, $1, $3);}
+         | arithmetic_expression {arithmeticExprType = -2;}
          ;
 
 code_block:
@@ -623,41 +954,68 @@ eval_result: eval_result '+' eval_result
 string_statement: ID '=' string_function 
                 {
                     variable_previously_defined($1);
+                    set_init_variable(&listOfVariables, $1);
+                    check_variable_is_const(listOfVariables, $1);
+
                     if (type_of_variable(listOfVariables, $1) != 3)
                     {
-                        printf("Invalid type of variable (line: %d)\n", yylineno);
-                        noSemanticErrors = 0;
+                        different_types();
                     }
                 }
                 | ID '=' LENGTH '(' string_content')'
                 {
                     variable_previously_defined($1);
+                    set_init_variable(&listOfVariables, $1);
+                    check_variable_is_const(listOfVariables, $1);
+
                     if (type_of_variable(listOfVariables, $1) != 0)
                     {
-                        printf("Invalid type of variable (line: %d)\n", yylineno);
-                        noSemanticErrors = 0;
+                        different_types();
                     }
                 }
                 | ID '=' COMPARE '(' strings_content ')'
                 {
                     variable_previously_defined($1);
+                    set_init_variable(&listOfVariables, $1);
+                    check_variable_is_const(listOfVariables, $1);
+
                     if (type_of_variable(listOfVariables, $1) != 0)
                     {
-                        printf("Invalid type of variable (line: %d)\n", yylineno);
-                        noSemanticErrors = 0;
+                        different_types();
                     }
                 }
                 | ID '.' ID '=' string_function
                 {
                     class_variable_previously_defined($1, $3);
+                    set_init_class_variable(&listOfClasses, $1, $3);
+                    check_class_variable_is_const(listOfClasses, $1, $3);
+
+                    if (type_of_class_variable(listOfClasses, $1, $3) != 3)
+                    {
+                        different_types();
+                    }
                 }
                 | ID '.' ID '=' LENGTH '(' string_content')'
                 {
                     class_variable_previously_defined($1, $3);
+                    set_init_class_variable(&listOfClasses, $1, $3);
+                    check_class_variable_is_const(listOfClasses, $1, $3);
+
+                    if (type_of_class_variable(listOfClasses, $1, $3) != 0)
+                    {
+                        different_types();
+                    }
                 }
                 | ID '.' ID '=' COMPARE '(' strings_content ')'
                 {
                     class_variable_previously_defined($1, $3);
+                    set_init_class_variable(&listOfClasses, $1, $3);
+                    check_class_variable_is_const(listOfClasses, $1, $3);
+
+                    if (type_of_class_variable(listOfClasses, $1, $3) != 0)
+                    {
+                        different_types();
+                    }
                 }
                 ;
 
@@ -672,15 +1030,22 @@ strings_content: string_content ',' string_content
 string_content: ID 
               {
                 variable_previously_defined($1);
+                check_variable_is_init(listOfVariables, $1);
+
                 if (type_of_variable(listOfVariables, $1) != 3)
                 {
-                    printf("Invalid type of variable (line: %d)\n", yylineno);
-                    noSemanticErrors = 0;
+                    different_types();
                 }
               }
               | ID '.' ID 
               {
                 class_variable_previously_defined($1, $3);
+                check_class_variable_is_init(listOfClasses, $1, $3);
+
+                if (type_of_class_variable(listOfClasses, $1, $3) != 3)
+                {
+                    different_types();
+                }
               }
               | STRING_VALUE
               | '(' call ')'
@@ -777,6 +1142,80 @@ void class_variable_was_declared(VariableTable arr, char* id)
     }
 }
 
+int variable_is_init(VariableTable arr, char* id)
+{
+    for (int i = 0; i < arr.varNumber; ++i)
+    {
+        if (strcmp(arr.varTable[i].name, id) == 0)
+        {
+            return arr.varTable[i].t.isInit;
+        }
+    }
+}
+
+int class_variable_is_init(ClassTable arr, char* className, char* id)
+{
+    for (int i = 0; i < arr.classNumber; ++i)
+    {
+        if (strcmp(arr.classTable[i].name, className) == 0)
+        {
+            for (int j = 0; j < arr.classTable[i].attribTable.varNumber; ++j)
+            {
+                if (strcmp(arr.classTable[i].attribTable.varTable[j].name, id) == 0)
+                {
+                    return arr.classTable[i].attribTable.varTable[j].t.isInit;
+                }
+            }
+        }
+    }
+}
+
+void set_init_variable(VariableTable* arr, char* id)
+{
+    for (int i = 0; i < arr->varNumber; ++i)
+    {
+        if (strcmp(arr->varTable[i].name, id) == 0)
+        {
+            arr->varTable[i].t.isInit = 1;
+        }
+    }
+}
+
+void set_init_class_variable(ClassTable* arr, char* className, char* id)
+{
+    for (int i = 0; i < arr->classNumber; ++i)
+    {
+        if (strcmp(arr->classTable[i].name, className) == 0)
+        {
+            for (int j = 0; j < arr->classTable[i].attribTable.varNumber; ++j)
+            {
+                if (strcmp(arr->classTable[i].attribTable.varTable[j].name, id) == 0)
+                {
+                    arr->classTable[i].attribTable.varTable[j].t.isInit = 1;
+                }
+            }
+        }
+    }
+}
+
+void check_variable_is_init(VariableTable arr, char* id)
+{
+    if (variable_is_init(arr, id) == 0)
+    {
+        printf("A variable (%s) appearing in the right side of an expression should have been initialized explicitly (line: %d)\n", id, yylineno);
+        noSemanticErrors = 0;
+    }
+}
+
+void check_class_variable_is_init(ClassTable arr, char* className, char* id)
+{
+    if (class_variable_is_init(arr, className, id) == 0)
+    {
+        printf("A variable (%s.%s) appearing in the right side of an expression should have been initialized explicitly (line: %d)\n", className, id, yylineno);
+        noSemanticErrors = 0;
+    }
+}
+
 void variable_previously_defined(char* id)
 {
     for (int i = 0; i < listOfVariables.varNumber; ++i)
@@ -805,8 +1244,8 @@ void class_variable_previously_defined(char* className, char* id)
             }
             printf("Variable %s (line: %d) from class %s has not been previously defined\n", id, yylineno, className);
             noSemanticErrors = 0;
+            return;
         }
-        return;
     }
     printf("Class %s (line: %d) has not been previously defined\n", className, yylineno);
     noSemanticErrors = 0;
@@ -827,6 +1266,12 @@ int compare_params(struct Variable v1, struct Variable v2)
         return 0;
     }
     return 1;
+}
+
+void different_types()
+{
+    printf("The left side of an assignment must have the same type as the right side (line: %d)\n", yylineno);
+    noSemanticErrors = 0;
 }
 
 void function_was_declared(FunctionTable arr, struct Function fun)
@@ -942,6 +1387,97 @@ int type_of_variable(VariableTable arr, char* id)
     }
 }
 
+int type_of_class_variable(ClassTable arr, char* className, char* id)
+{
+    for (int i = 0; i < arr.classNumber; ++i)
+    {
+        if (strcmp(arr.classTable[i].name, className) == 0)
+        {
+            for (int j = 0; j < arr.classTable[i].attribTable.varNumber; ++j)
+            {
+                if (strcmp(arr.classTable[i].attribTable.varTable[j].name, id) == 0)
+                {
+                    return (arr.classTable[i].attribTable.varTable[j].t.mainType);
+                }
+            }
+        }
+    }
+}
+
+int type_of_return_function(FunctionTable arr, char* id)
+{
+    for (int i = 0; i < arr.funcNumber; ++i)
+    {
+        if (strcmp(arr.funcTable[i].name, id) == 0)
+        {
+            return arr.funcTable[i].returnType;
+        }
+    }
+}
+
+int type_of_return_method(ClassTable arr, char* className, char* id)
+{
+    for (int i = 0; i < arr.classNumber; ++i)
+    {
+        if (strcmp(arr.classTable[i].name, className) == 0)
+        {
+            for (int j = 0; j < arr.classTable[i].methTable.funcNumber; ++j)
+            {
+                if (strcmp(arr.classTable[i].methTable.funcTable[j].name, id) == 0)
+                {
+                    return arr.classTable[i].methTable.funcTable[j].returnType;
+                }
+            }
+        }
+    }
+}
+
+int variable_is_const(VariableTable arr, char* id)
+{
+    for (int i = 0; i < arr.varNumber; ++i)
+    {
+        if (strcmp(arr.varTable[i].name, id) == 0)
+        {
+            return (arr.varTable[i].t.isConst);
+        }
+    }
+}
+
+int class_variable_is_const(ClassTable arr, char* className, char* id)
+{
+    for (int i = 0; i < arr.classNumber; ++i)
+    {
+        if (strcmp(arr.classTable[i].name, className) == 0)
+        {
+            for (int j = 0; j < arr.classTable[i].attribTable.varNumber; ++j)
+            {
+                if (strcmp(arr.classTable[i].attribTable.varTable[j].name, id) == 0)
+                {
+                    return (arr.classTable[i].attribTable.varTable[j].t.isConst);
+                }
+            }
+        }
+    }
+}
+
+void check_variable_is_const(VariableTable arr, char* id)
+{
+    if (variable_is_const(arr, id) == 1)
+    {
+        printf("Const variable %s cannot be reassigned (line: %d)\n", id, yylineno);
+        noSemanticErrors = 0;
+    }
+}
+
+void check_class_variable_is_const(ClassTable arr, char* className, char* id)
+{
+    if (class_variable_is_const(arr, className, id) == 1)
+    {
+        printf("Const variable %s.%s cannot be reassigned (line: %d)\n", className, id, yylineno);
+        noSemanticErrors = 0;
+    }
+}
+
 int yyerror(char *s)
 {
     printf("Error(line %d): %s\n", yylineno, s);
@@ -1009,6 +1545,11 @@ int main(int argc, char** argv)
             if (listOfVariables.varTable[i].t.isConst == 1)
             {
                 fprintf(f, " || const");
+            }
+
+            if (listOfVariables.varTable[i].t.isInit == 1)
+            {
+                fprintf(f, " || init");
             }
 
             if (listOfVariables.varTable[i].t.isArray == 1)
@@ -1139,6 +1680,11 @@ int main(int argc, char** argv)
                     if (listOfClasses.classTable[i].attribTable.varTable[j].t.isConst == 1)
                     {
                         fprintf(f, " || const");
+                    }
+
+                    if (listOfClasses.classTable[i].attribTable.varTable[j].t.isInit == 1)
+                    {
+                        fprintf(f, " || init");
                     }
 
                     if (listOfClasses.classTable[i].attribTable.varTable[j].t.isArray == 1)

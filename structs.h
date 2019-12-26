@@ -24,6 +24,7 @@ typedef struct
     int mainType;
     // 0-int, 1-float, 2-char, 3-string, 4-bool, 5-object
     int isConst;
+    int isInit;
     int isArray;
     int lengthOfArray;
 } Type;

@@ -1,6 +1,6 @@
 begin_declarations
 
-char a = 5, c = true;
+int a = 2, c = 3;
 
 float z, w;
 
@@ -34,14 +34,14 @@ class Example
 {
 	float a2[10];
 
-	method char proc(int a)
+	method int proc(int a)
 	{
 		return 1;
 	}
 
 	method float p1()
 	{
-		return a;
+		return 2.2;
 	}
 
 	method int abc(float b[12], char c)
@@ -51,25 +51,27 @@ class Example
 	}
 }
 
-int aaa[20] = {-1, 2, 2.5};
+int aaa[20] = {-1, 2, 23};
 
-const int a2 = 2;
+int a2 = 2;
 
 
-function float : abc(float A, float B, Example b)
+function int : abc(float A, float B, Example b)
 {
 	aaa = 5 + 3;
-	return aaa;
+	return 1;
 }
+
+string bc = "abc";
 
 function string : str(string z)
 {
-	return a2;
+	return bc;
 }
 
 function string : str(string a, string b)
 {
-	return a2;
+	return bc;
 }
 
 class Test 
@@ -83,18 +85,11 @@ class Test
 		aaa = 2;
 		return a2;
 	}
-
-	/*
-	method int abc()
-	{
-		return 2;
-	}
-	*/
 }
 
 class test2
 {
-	float a = 12.7, b = 2;
+	float a = 12.7, b = 2.0;
 }
 
 class a
@@ -116,7 +111,7 @@ end_declarations
 
 begin_main
 
-a = b;
+a = c;
 Eval(4 - 9);
 
 c[2] = -3;
@@ -141,15 +136,13 @@ for (int i = 1; i < 3; i = i + 1)
 
 a = call example(a,b,c);
 
-aaa = call abc(2 * d + (a = call abc(1,2,aaa) ), b*c*(a = call str() ));
+aaa = call abc();
 
-d = "abc";
+test2.b = 2.0;
 
-d.c = 2;
+test2.a = 12.2;
 
-a.prt = "abc";
-
-a = call Example.proc (2.14, (a = call Test.abc (2*4, c, d.v) ));
+a = call Example.proc ();
 
 while i > 3 do
 {
@@ -160,6 +153,8 @@ while i > 3 do
 Eval(5 + 2 / 4 - -3 + 5 * 2);
 Eval(3 + 5);
 
+s1 = "aa";
+s2 = "abc";
 s1 = concat(s1, s2);
 a2 = length("abcd");
 a2 = compare(s1, s2);

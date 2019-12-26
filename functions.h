@@ -39,6 +39,7 @@ void insert_variable(VariableTable* arr, struct Variable var)
     arr->varTable[arr->varNumber].line = var.line;
     arr->varTable[arr->varNumber].t.mainType = var.t.mainType;
     arr->varTable[arr->varNumber].t.isConst = var.t.isConst;
+    arr->varTable[arr->varNumber].t.isInit = var.t.isInit;
     arr->varTable[arr->varNumber].t.isArray = var.t.isArray;
     arr->varTable[arr->varNumber].t.lengthOfArray = var.t.lengthOfArray;
     ++arr->varNumber;
