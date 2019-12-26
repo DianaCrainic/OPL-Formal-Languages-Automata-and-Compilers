@@ -15,7 +15,8 @@ Variables:
 14) name: bc || scope: global || type: string || init || line: 65
 15) name: s1 || scope: global || type: string || init || line: 105
 16) name: s2 || scope: global || type: string || init || line: 105
-17) name: i || scope: #main#for# || type: integer || init || line: 132
+17) name: zx || scope: global || type: float || init || array of length: 10 || line: 106
+18) name: i || scope: #main#for# || type: integer || init || line: 133
 
 
 ---------------------
@@ -31,7 +32,7 @@ Functions:
 2) name: abc || return type: integer || line: 59 || parameters: 
 >>> 2.1) name: A || type: float
 >>> 2.2) name: B || type: float
->>> 2.3) name: b || type: object
+>>> 2.3) name: b || type: integer || array of length: 80
 
 3) name: str || return type: string || line: 67 || parameters: 
 >>> 3.1) name: z || type: string

@@ -24,11 +24,6 @@ int isFunction = 0;
 int arithmeticExprType = -2;
 int returnType;
 
-expr_info* create_int_expr(int value);
-expr_info* create_str_expr(char* value1, char* value2);
-void free_expr(expr_info* expr);
-void print_expr(expr_info* expr);
-
 void update_scope();
 
 //3.1
@@ -65,7 +60,16 @@ int type_of_return_method(ClassTable arr, char* className, char* id);
 void different_types();
 
 //3.7
+int variable_is_array(VariableTable arr, char* id);
+int class_variable_is_array(ClassTable arr, char* className, char* id);
+void check_function_signature(FunctionTable arr, struct Function fun);
+void check_method_signature(ClassTable arr, char* className, struct Function fun);
 
+//3.8
+expr_info* create_int_expr(int value);
+expr_info* create_str_expr(char* value1, char* value2);
+void free_expr(expr_info* expr);
+void print_expr(expr_info* expr);
 
 //extra
 void check_array_length(int len);
@@ -318,12 +322,6 @@ variable: type ID
             v.t.lengthOfArray = $4;
             strcpy(v.name, $2);
         }
-        | ID ID
-        {
-            v.t.isArray = 0;
-            v.t.mainType = 5;
-            strcpy(v.name, $2);
-        }
         ;
 
 class_decl: CLASS ID 
@@ -470,6 +468,9 @@ main_content: statement
 
 statement: assign ';'
          | call ';'
+         {
+            free_variables(&fun.paramTable);
+         }
          | if_statement
          | while_statement
          | for_statement
@@ -717,57 +718,65 @@ assign: ID '=' ID
       }
       ;
 
-call: ID '=' CALL ID '(' call_param ')'
+call: ID '=' CALL ID {init_variables(&fun.paramTable);} '(' call_param ')'
     {
         variable_previously_defined($1);
         function_previously_defined($4);
-        set_init_variable(&listOfVariables, $1);
         check_variable_is_const(listOfVariables, $1);
+        set_init_variable(&listOfVariables, $1);
 
         if (type_of_variable(listOfVariables, $1) != type_of_return_function(listOfFunctions, $4))
         {
             different_types();
         }
         returnType = type_of_return_function(listOfFunctions, $4);
+        strcpy(fun.name, $4);
+        check_function_signature(listOfFunctions, fun);
     }
-    | ID '.' ID '=' CALL ID '(' call_param ')' 
+    | ID '.' ID '=' CALL ID {init_variables(&fun.paramTable);} '(' call_param ')' 
     {
         class_variable_previously_defined($1, $3);
         function_previously_defined($6);
-        set_init_class_variable(&listOfClasses, $1, $3);
         check_class_variable_is_const(listOfClasses, $1, $3);
+        set_init_class_variable(&listOfClasses, $1, $3);
 
         if(type_of_class_variable(listOfClasses, $1, $3) != type_of_return_function(listOfFunctions, $6))
         {
             different_types();
         }
         returnType = type_of_return_function(listOfFunctions, $6);
+        strcpy(fun.name, $6);
+        check_function_signature(listOfFunctions, fun);
     }
-    | ID '=' CALL ID '.' ID '(' call_param ')' 
+    | ID '=' CALL ID '.' ID {init_variables(&fun.paramTable);} '(' call_param ')' 
     {
         variable_previously_defined($1);
         method_previously_defined($4, $6);
-        set_init_variable(&listOfVariables, $1);
         check_variable_is_const(listOfVariables, $1);
+        set_init_variable(&listOfVariables, $1);
 
         if(type_of_variable(listOfVariables, $1) != type_of_return_method(listOfClasses, $4, $6))
         {
             different_types();
         }
         returnType = type_of_return_method(listOfClasses, $4, $6);
+        strcpy(fun.name, $6);
+        check_method_signature(listOfClasses, $4, fun);
     }
-    | ID '.' ID '=' CALL ID '.' ID '(' call_param ')'
+    | ID '.' ID '=' CALL ID '.' ID {init_variables(&fun.paramTable);} '(' call_param ')'
     {
         class_variable_previously_defined($1, $3);
         method_previously_defined($6, $8);
-        set_init_class_variable(&listOfClasses, $1, $3);
         check_class_variable_is_const(listOfClasses, $1, $3);
+        set_init_class_variable(&listOfClasses, $1, $3);
 
         if(type_of_class_variable(listOfClasses, $1, $3) != type_of_return_method(listOfClasses, $6, $8))
         {
             different_types();
         }
         returnType = type_of_return_method(listOfClasses, $6, $8);
+        strcpy(fun.name, $8);
+        check_method_signature(listOfClasses, $6, fun);
     }
     ;
 
@@ -775,16 +784,29 @@ call_param:
           | list_call_param
           ;
 
-list_call_param: param
-               | param ',' list_call_param
+list_call_param: param {insert_variable(&fun.paramTable, v);}
+               | param {insert_variable(&fun.paramTable, v);} ',' list_call_param
                ;
 
-param: value
-     | ID {variable_previously_defined($1); check_variable_is_init(listOfVariables, $1);}
-     | ID '.' ID {class_variable_previously_defined($1, $3); check_class_variable_is_init(listOfClasses, $1, $3);}
-     | arithmetic_expression
-     | '(' call ')'
-     | string_function
+param: value 
+     {
+        v.t.mainType = valueType;
+        v.t.isArray = 0;
+     }
+     | ID 
+     {
+        variable_previously_defined($1);
+        check_variable_is_init(listOfVariables, $1);
+        v.t.mainType = type_of_variable(listOfVariables, $1);
+        v.t.isArray = variable_is_array(listOfVariables, $1);
+     }
+     | ID '.' ID 
+     {
+        class_variable_previously_defined($1, $3);
+        check_class_variable_is_init(listOfClasses, $1, $3);
+        v.t.mainType = type_of_class_variable(listOfClasses, $1, $3);
+        v.t.isArray = class_variable_is_array(listOfClasses, $1, $3);
+     }
      ;
 
 arithmetic_expression: operand operator operand
@@ -1048,7 +1070,6 @@ string_content: ID
                 }
               }
               | STRING_VALUE
-              | '(' call ')'
               ;
 
 %%
@@ -1257,10 +1278,6 @@ int compare_params(struct Variable v1, struct Variable v2)
     {
         return 0;
     }
-    if (v1.t.isConst != v2.t.isConst)
-    {
-        return 0;
-    }
     if (v1.t.isArray != v2.t.isArray)
     {
         return 0;
@@ -1426,6 +1443,98 @@ int type_of_return_method(ClassTable arr, char* className, char* id)
                 if (strcmp(arr.classTable[i].methTable.funcTable[j].name, id) == 0)
                 {
                     return arr.classTable[i].methTable.funcTable[j].returnType;
+                }
+            }
+        }
+    }
+}
+
+int variable_is_array(VariableTable arr, char* id)
+{
+    for (int i = 0; i < arr.varNumber; ++i)
+    {
+        if (strcmp(arr.varTable[i].name, id) == 0)
+        {
+            return (arr.varTable[i].t.isArray);
+        }
+    }
+}
+
+int class_variable_is_array(ClassTable arr, char* className, char* id)
+{
+    for (int i = 0; i < arr.classNumber; ++i)
+    {
+        if (strcmp(arr.classTable[i].name, className) == 0)
+        {
+            for (int j = 0; j < arr.classTable[i].attribTable.varNumber; ++j)
+            {
+                if (strcmp(arr.classTable[i].attribTable.varTable[j].name, id) == 0)
+                {
+                    return (arr.classTable[i].attribTable.varTable[j].t.isArray);
+                }
+            }
+        }
+    }
+}
+
+void check_function_signature(FunctionTable arr, struct Function fun)
+{
+    for (int i = 0; i < arr.funcNumber; ++i)
+    {
+        if (strcmp(arr.funcTable[i].name, fun.name) == 0)
+        {
+            if (fun.paramTable.varNumber == arr.funcTable[i].paramTable.varNumber)
+            {
+                for (int j = 0; j < fun.paramTable.varNumber; ++j)
+                {
+                    if (compare_params(fun.paramTable.varTable[j], arr.funcTable[i].paramTable.varTable[j]) == 0)
+                    {
+                        printf("Wrong type of argument no. %d for function %s (line: %d)\n", (j + 1), fun.name, yylineno);
+                        noSemanticErrors = 0;
+                        return;
+                    }
+                }
+                return;
+            }
+            else
+            {   
+                printf("Wrong number of arguments for function %s (line: %d)\n", fun.name, yylineno);
+                noSemanticErrors = 0;
+                return;
+            }
+        }
+    }
+}
+
+void check_method_signature(ClassTable arr, char* className, struct Function fun)
+{
+    for (int i = 0; i < arr.classNumber; ++i)
+    {
+        if (strcmp(arr.classTable[i].name, className) == 0)
+        {
+            for (int j = 0; j < arr.classTable[i].methTable.funcNumber; ++j)
+            {
+                if (strcmp(arr.classTable[i].methTable.funcTable[j].name, fun.name) == 0)
+                {
+                    if (fun.paramTable.varNumber == arr.classTable[i].methTable.funcTable[j].paramTable.varNumber)
+                    {
+                        for (int k = 0; j < fun.paramTable.varNumber; ++j)
+                        {
+                            if (compare_params(fun.paramTable.varTable[k], arr.classTable[i].methTable.funcTable[j].paramTable.varTable[k]) == 0)
+                            {
+                                printf("Wrong type of argument no. %d for method %s.%s (line: %d)\n", (k + 1), className, fun.name, yylineno);
+                                noSemanticErrors = 0;
+                                return;
+                            }
+                        }
+                        return;
+                    }
+                    else
+                    {   
+                        printf("Wrong number of arguments for method %s.%s (line: %d)\n", className, fun.name, yylineno);
+                        noSemanticErrors = 0;
+                        return;
+                    }
                 }
             }
         }
