@@ -962,17 +962,6 @@ eval_result: eval_result '+' eval_result
             }
            | INTEGER_NUMBER {$$ = create_int_expr($1);}
 
-// eval_expression: eval_operand operator eval_operand
-//                | eval_operand operator eval_expression
-//                ;
-
-// eval_operand: ID
-//             | ID '.' ID
-//             | INTEGER_NUMBER
-//             | '(' call ')'
-//             | LENGTH '(' string_content')'
-//             ;
-
 string_statement: ID '=' string_function 
                 {
                     variable_previously_defined($1);

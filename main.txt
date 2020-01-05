@@ -28,7 +28,7 @@ char b = 'a';
 
 string d = "abc";
 
-const bool aa = false;
+const bool aa = true;
 
 class Example 
 {
@@ -134,7 +134,6 @@ for (int i = 1; i < 3; i = i + 1)
 {
 	a = 3;
 }
-
 
 a = call example(1, zx, 'a', false);
 
