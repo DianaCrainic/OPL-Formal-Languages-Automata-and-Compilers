@@ -137,6 +137,7 @@ void free_expr(expr_info* expr);
 void print_expr(expr_info* expr);
 
 //extra
+void check_scope(VariableTable arr, char* id, char* currentScope);
 void check_array_length(int len);
 int variable_is_const(VariableTable arr, char* id);
 int class_variable_is_const(ClassTable arr, char* className, char* id);
@@ -144,7 +145,7 @@ void check_variable_is_const(VariableTable arr, char* id);
 void check_class_variable_is_const(ClassTable arr, char* className, char* id);
 
 
-#line 148 "y.tab.c" /* yacc.c:339  */
+#line 149 "y.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -266,13 +267,13 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 84 "opl.y" /* yacc.c:355  */
+#line 85 "opl.y" /* yacc.c:355  */
 
     int intval;
     char* strval;
     struct expr_info* expr_ptr;
 
-#line 276 "y.tab.c" /* yacc.c:355  */
+#line 277 "y.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -289,7 +290,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 293 "y.tab.c" /* yacc.c:358  */
+#line 294 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -590,25 +591,25 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   119,   119,   122,   123,   124,   127,   127,   130,   131,
-     134,   135,   136,   139,   142,   142,   143,   146,   159,   172,
-     187,   202,   212,   224,   227,   228,   231,   232,   233,   234,
-     235,   238,   239,   240,   241,   242,   245,   246,   249,   257,
-     269,   270,   269,   281,   282,   285,   285,   286,   289,   294,
-     304,   311,   318,   328,   327,   345,   346,   349,   350,   353,
-     356,   356,   357,   360,   373,   386,   401,   411,   423,   423,
-     423,   433,   434,   437,   438,   438,   441,   442,   450,   462,
-     462,   465,   466,   469,   470,   474,   475,   476,   477,   478,
-     481,   494,   507,   520,   533,   544,   555,   567,   579,   591,
-     603,   617,   631,   645,   659,   674,   689,   704,   721,   721,
-     736,   736,   751,   751,   766,   766,   783,   784,   787,   788,
-     788,   791,   796,   803,   812,   813,   816,   831,   849,   867,
-     884,   885,   886,   887,   890,   890,   890,   893,   893,   894,
-     897,   898,   899,   900,   901,   902,   903,   904,   905,   906,
-     907,   908,   909,   912,   913,   914,   917,   917,   920,   920,
-     923,   924,   927,   930,   939,   945,   951,   957,   963,   965,
-     976,   987,   998,  1009,  1020,  1033,  1034,  1035,  1038,  1041,
-    1051,  1061
+       0,   120,   120,   123,   124,   125,   128,   128,   131,   132,
+     135,   136,   137,   140,   143,   143,   144,   147,   160,   173,
+     189,   204,   214,   226,   229,   230,   233,   234,   235,   236,
+     237,   240,   241,   242,   243,   244,   247,   248,   251,   259,
+     272,   273,   272,   284,   285,   288,   288,   289,   292,   297,
+     307,   314,   321,   331,   330,   348,   349,   352,   353,   356,
+     359,   359,   360,   363,   376,   389,   404,   414,   426,   426,
+     426,   436,   437,   440,   441,   441,   444,   445,   453,   466,
+     466,   469,   470,   473,   474,   478,   479,   480,   481,   482,
+     485,   500,   514,   528,   541,   553,   564,   577,   589,   602,
+     614,   630,   645,   660,   674,   691,   707,   723,   740,   740,
+     756,   756,   771,   771,   787,   787,   804,   805,   808,   809,
+     809,   812,   817,   825,   834,   835,   838,   853,   872,   890,
+     907,   908,   909,   910,   913,   913,   913,   916,   916,   917,
+     920,   921,   922,   923,   924,   925,   926,   927,   928,   929,
+     930,   931,   932,   935,   936,   937,   940,   940,   943,   943,
+     946,   947,   950,   953,   962,   968,   974,   980,   986,   988,
+    1000,  1012,  1024,  1035,  1046,  1059,  1060,  1061,  1064,  1067,
+    1078,  1088
 };
 #endif
 
@@ -1658,31 +1659,31 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 119 "opl.y" /* yacc.c:1646  */
+#line 120 "opl.y" /* yacc.c:1646  */
     {printf("No syntactic errors\n"); noSyntacticErrors = 1;}
-#line 1664 "y.tab.c" /* yacc.c:1646  */
+#line 1665 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 127 "opl.y" /* yacc.c:1646  */
+#line 128 "opl.y" /* yacc.c:1646  */
     {strcpy(v.scope, "#\0");}
-#line 1670 "y.tab.c" /* yacc.c:1646  */
+#line 1671 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 142 "opl.y" /* yacc.c:1646  */
+#line 143 "opl.y" /* yacc.c:1646  */
     {insert_variable(&listOfVariables, v);}
-#line 1676 "y.tab.c" /* yacc.c:1646  */
+#line 1677 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 143 "opl.y" /* yacc.c:1646  */
+#line 144 "opl.y" /* yacc.c:1646  */
     {insert_variable(&listOfVariables, v);}
-#line 1682 "y.tab.c" /* yacc.c:1646  */
+#line 1683 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 147 "opl.y" /* yacc.c:1646  */
+#line 148 "opl.y" /* yacc.c:1646  */
     {
         variable_was_declared((yyvsp[0].strval));
         if (v.t.isConst == 1)
@@ -1695,11 +1696,11 @@ yyreduce:
         v.t.isArray = 0;
         strcpy(v.name, (yyvsp[0].strval));
     }
-#line 1699 "y.tab.c" /* yacc.c:1646  */
+#line 1700 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 160 "opl.y" /* yacc.c:1646  */
+#line 161 "opl.y" /* yacc.c:1646  */
     {
         variable_was_declared((yyvsp[-2].strval));
         leftType = v.t.mainType;
@@ -1712,11 +1713,11 @@ yyreduce:
         v.t.isArray = 0;
         strcpy(v.name, (yyvsp[-2].strval));
     }
-#line 1716 "y.tab.c" /* yacc.c:1646  */
+#line 1717 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 173 "opl.y" /* yacc.c:1646  */
+#line 174 "opl.y" /* yacc.c:1646  */
     {
         variable_was_declared((yyvsp[-2].strval));
         variable_previously_defined((yyvsp[0].strval));
@@ -1726,16 +1727,17 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[0].strval), v.scope);
         v.t.isInit = 1;
         v.line = yylineno;
         v.t.isArray = 0;
         strcpy(v.name, (yyvsp[-2].strval));
     }
-#line 1735 "y.tab.c" /* yacc.c:1646  */
+#line 1737 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 188 "opl.y" /* yacc.c:1646  */
+#line 190 "opl.y" /* yacc.c:1646  */
     {
         variable_was_declared((yyvsp[-3].strval));
         check_array_length((yyvsp[-1].intval));
@@ -1750,11 +1752,11 @@ yyreduce:
         v.t.lengthOfArray = (yyvsp[-1].intval);
         strcpy(v.name, (yyvsp[-3].strval));
     }
-#line 1754 "y.tab.c" /* yacc.c:1646  */
+#line 1756 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 203 "opl.y" /* yacc.c:1646  */
+#line 205 "opl.y" /* yacc.c:1646  */
     {
         variable_was_declared((yyvsp[-6].strval));
         v.line = yylineno;
@@ -1764,11 +1766,11 @@ yyreduce:
         v.t.lengthOfArray = (yyvsp[-4].intval);
         strcpy(v.name, (yyvsp[-6].strval));
     }
-#line 1768 "y.tab.c" /* yacc.c:1646  */
+#line 1770 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 213 "opl.y" /* yacc.c:1646  */
+#line 215 "opl.y" /* yacc.c:1646  */
     {
         variable_was_declared((yyvsp[-7].strval));
         v.line = yylineno;
@@ -1778,83 +1780,83 @@ yyreduce:
         v.t.lengthOfArray = (yyvsp[-5].intval);
         strcpy(v.name, (yyvsp[-7].strval));
     }
-#line 1782 "y.tab.c" /* yacc.c:1646  */
+#line 1784 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 227 "opl.y" /* yacc.c:1646  */
+#line 229 "opl.y" /* yacc.c:1646  */
     {v.t.isConst = 0;}
-#line 1788 "y.tab.c" /* yacc.c:1646  */
+#line 1790 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 228 "opl.y" /* yacc.c:1646  */
+#line 230 "opl.y" /* yacc.c:1646  */
     {v.t.isConst = 1;}
-#line 1794 "y.tab.c" /* yacc.c:1646  */
+#line 1796 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 231 "opl.y" /* yacc.c:1646  */
+#line 233 "opl.y" /* yacc.c:1646  */
     {if(isFunction == 0) {v.t.mainType = 0;} else {fun.returnType = 0;}}
-#line 1800 "y.tab.c" /* yacc.c:1646  */
+#line 1802 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 232 "opl.y" /* yacc.c:1646  */
+#line 234 "opl.y" /* yacc.c:1646  */
     {if(isFunction == 0) {v.t.mainType = 1;} else {fun.returnType = 1;}}
-#line 1806 "y.tab.c" /* yacc.c:1646  */
+#line 1808 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 233 "opl.y" /* yacc.c:1646  */
+#line 235 "opl.y" /* yacc.c:1646  */
     {if(isFunction == 0) {v.t.mainType = 2;} else {fun.returnType = 2;}}
-#line 1812 "y.tab.c" /* yacc.c:1646  */
+#line 1814 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 234 "opl.y" /* yacc.c:1646  */
+#line 236 "opl.y" /* yacc.c:1646  */
     {if(isFunction == 0) {v.t.mainType = 3;} else {fun.returnType = 3;}}
-#line 1818 "y.tab.c" /* yacc.c:1646  */
+#line 1820 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 235 "opl.y" /* yacc.c:1646  */
+#line 237 "opl.y" /* yacc.c:1646  */
     {if(isFunction == 0) {v.t.mainType = 4;} else {fun.returnType = 4;}}
-#line 1824 "y.tab.c" /* yacc.c:1646  */
+#line 1826 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 238 "opl.y" /* yacc.c:1646  */
+#line 240 "opl.y" /* yacc.c:1646  */
     {valueType = 0;}
-#line 1830 "y.tab.c" /* yacc.c:1646  */
+#line 1832 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 239 "opl.y" /* yacc.c:1646  */
+#line 241 "opl.y" /* yacc.c:1646  */
     {valueType = 1;}
-#line 1836 "y.tab.c" /* yacc.c:1646  */
+#line 1838 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 240 "opl.y" /* yacc.c:1646  */
+#line 242 "opl.y" /* yacc.c:1646  */
     {valueType = 2;}
-#line 1842 "y.tab.c" /* yacc.c:1646  */
+#line 1844 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 241 "opl.y" /* yacc.c:1646  */
+#line 243 "opl.y" /* yacc.c:1646  */
     {valueType = 3;}
-#line 1848 "y.tab.c" /* yacc.c:1646  */
+#line 1850 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 242 "opl.y" /* yacc.c:1646  */
+#line 244 "opl.y" /* yacc.c:1646  */
     {valueType = 4;}
-#line 1854 "y.tab.c" /* yacc.c:1646  */
+#line 1856 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 250 "opl.y" /* yacc.c:1646  */
+#line 252 "opl.y" /* yacc.c:1646  */
     {
                 leftType = v.t.mainType;
                 if (leftType != valueType)
@@ -1862,11 +1864,11 @@ yyreduce:
                     different_types();
                 }
              }
-#line 1866 "y.tab.c" /* yacc.c:1646  */
+#line 1868 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 258 "opl.y" /* yacc.c:1646  */
+#line 260 "opl.y" /* yacc.c:1646  */
     {
                 variable_previously_defined((yyvsp[0].strval));
                 check_variable_is_init(listOfVariables, (yyvsp[0].strval));
@@ -1875,56 +1877,57 @@ yyreduce:
                 {
                     different_types();
                 }
+                check_scope(listOfVariables, (yyvsp[0].strval), v.scope);
              }
-#line 1880 "y.tab.c" /* yacc.c:1646  */
+#line 1883 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 269 "opl.y" /* yacc.c:1646  */
+#line 272 "opl.y" /* yacc.c:1646  */
     {isFunction = 1; strcat(v.scope, "function#\0"); init_variables(&fun.paramTable);}
-#line 1886 "y.tab.c" /* yacc.c:1646  */
+#line 1889 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 270 "opl.y" /* yacc.c:1646  */
+#line 273 "opl.y" /* yacc.c:1646  */
     {fun.line = yylineno; isFunction = 0; strcpy(fun.name, (yyvsp[0].strval));}
-#line 1892 "y.tab.c" /* yacc.c:1646  */
+#line 1895 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 273 "opl.y" /* yacc.c:1646  */
+#line 276 "opl.y" /* yacc.c:1646  */
     {
                     function_was_declared(listOfFunctions, fun);
                     insert_function(&listOfFunctions, fun);
                     free_variables(&fun.paramTable);
                     update_scope();
                 }
-#line 1903 "y.tab.c" /* yacc.c:1646  */
+#line 1906 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 285 "opl.y" /* yacc.c:1646  */
+#line 288 "opl.y" /* yacc.c:1646  */
     {insert_variable(&fun.paramTable, v);}
-#line 1909 "y.tab.c" /* yacc.c:1646  */
+#line 1912 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 286 "opl.y" /* yacc.c:1646  */
+#line 289 "opl.y" /* yacc.c:1646  */
     {insert_variable(&fun.paramTable, v);}
-#line 1915 "y.tab.c" /* yacc.c:1646  */
+#line 1918 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 290 "opl.y" /* yacc.c:1646  */
+#line 293 "opl.y" /* yacc.c:1646  */
     {
             v.t.isArray = 0;
             strcpy(v.name, (yyvsp[0].strval));
         }
-#line 1924 "y.tab.c" /* yacc.c:1646  */
+#line 1927 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 295 "opl.y" /* yacc.c:1646  */
+#line 298 "opl.y" /* yacc.c:1646  */
     {
             leftType = v.t.mainType;
             if (leftType != valueType)
@@ -1934,44 +1937,44 @@ yyreduce:
             v.t.isArray = 0;
             strcpy(v.name, (yyvsp[-2].strval));
         }
-#line 1938 "y.tab.c" /* yacc.c:1646  */
+#line 1941 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 305 "opl.y" /* yacc.c:1646  */
+#line 308 "opl.y" /* yacc.c:1646  */
     {
             check_array_length((yyvsp[-1].intval));
             v.t.isArray = 1;
             v.t.lengthOfArray = (yyvsp[-1].intval);
             strcpy(v.name, (yyvsp[-3].strval));
         }
-#line 1949 "y.tab.c" /* yacc.c:1646  */
+#line 1952 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 312 "opl.y" /* yacc.c:1646  */
+#line 315 "opl.y" /* yacc.c:1646  */
     {
             check_array_length((yyvsp[-4].intval));
             v.t.isArray = 1;
             v.t.lengthOfArray = (yyvsp[-4].intval);
             strcpy(v.name, (yyvsp[-6].strval));
         }
-#line 1960 "y.tab.c" /* yacc.c:1646  */
+#line 1963 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 319 "opl.y" /* yacc.c:1646  */
+#line 322 "opl.y" /* yacc.c:1646  */
     {
             check_array_length((yyvsp[-5].intval));
             v.t.isArray = 1;
             v.t.lengthOfArray = (yyvsp[-5].intval);
             strcpy(v.name, (yyvsp[-7].strval));
         }
-#line 1971 "y.tab.c" /* yacc.c:1646  */
+#line 1974 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 328 "opl.y" /* yacc.c:1646  */
+#line 331 "opl.y" /* yacc.c:1646  */
     {
                 cl.line = yylineno;
                 strcat(v.scope, "class#method#\0");
@@ -1979,11 +1982,11 @@ yyreduce:
                 init_variables(&cl.attribTable);
                 init_functions(&cl.methTable);
             }
-#line 1983 "y.tab.c" /* yacc.c:1646  */
+#line 1986 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 336 "opl.y" /* yacc.c:1646  */
+#line 339 "opl.y" /* yacc.c:1646  */
     {
                 insert_class(&listOfClasses, cl);
                 free_functions(&cl.methTable);
@@ -1991,23 +1994,23 @@ yyreduce:
                 update_scope();
                 update_scope();
             }
-#line 1995 "y.tab.c" /* yacc.c:1646  */
+#line 1998 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 356 "opl.y" /* yacc.c:1646  */
+#line 359 "opl.y" /* yacc.c:1646  */
     {insert_variable(&cl.attribTable, v);}
-#line 2001 "y.tab.c" /* yacc.c:1646  */
+#line 2004 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 357 "opl.y" /* yacc.c:1646  */
+#line 360 "opl.y" /* yacc.c:1646  */
     {insert_variable(&cl.attribTable, v);}
-#line 2007 "y.tab.c" /* yacc.c:1646  */
+#line 2010 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 63:
-#line 361 "opl.y" /* yacc.c:1646  */
+#line 364 "opl.y" /* yacc.c:1646  */
     {
                 class_variable_was_declared(cl.attribTable, (yyvsp[0].strval));
                 if (v.t.isConst == 1)
@@ -2020,11 +2023,11 @@ yyreduce:
                 v.t.isArray = 0;
                 strcpy(v.name, (yyvsp[0].strval));
               }
-#line 2024 "y.tab.c" /* yacc.c:1646  */
+#line 2027 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 374 "opl.y" /* yacc.c:1646  */
+#line 377 "opl.y" /* yacc.c:1646  */
     {
                 class_variable_was_declared(cl.attribTable, (yyvsp[-2].strval));
                 leftType = v.t.mainType;
@@ -2037,11 +2040,11 @@ yyreduce:
                 v.t.isArray = 0;
                 strcpy(v.name, (yyvsp[-2].strval));
               }
-#line 2041 "y.tab.c" /* yacc.c:1646  */
+#line 2044 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 387 "opl.y" /* yacc.c:1646  */
+#line 390 "opl.y" /* yacc.c:1646  */
     {
                 class_variable_was_declared(cl.attribTable, (yyvsp[-3].strval));
                 check_array_length((yyvsp[-1].intval));
@@ -2056,11 +2059,11 @@ yyreduce:
                 v.t.lengthOfArray = (yyvsp[-1].intval);
                 strcpy(v.name, (yyvsp[-3].strval));
               }
-#line 2060 "y.tab.c" /* yacc.c:1646  */
+#line 2063 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 402 "opl.y" /* yacc.c:1646  */
+#line 405 "opl.y" /* yacc.c:1646  */
     {
                 class_variable_was_declared(cl.attribTable, (yyvsp[-6].strval));
                 v.line = yylineno;
@@ -2070,11 +2073,11 @@ yyreduce:
                 v.t.lengthOfArray = (yyvsp[-4].intval);
                 strcpy(v.name, (yyvsp[-6].strval));
               }
-#line 2074 "y.tab.c" /* yacc.c:1646  */
+#line 2077 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 67:
-#line 412 "opl.y" /* yacc.c:1646  */
+#line 415 "opl.y" /* yacc.c:1646  */
     {
                 class_variable_was_declared(cl.attribTable, (yyvsp[-7].strval));
                 v.line = yylineno;
@@ -2084,45 +2087,45 @@ yyreduce:
                 v.t.lengthOfArray = (yyvsp[-5].intval);
                 strcpy(v.name, (yyvsp[-7].strval));
               }
-#line 2088 "y.tab.c" /* yacc.c:1646  */
+#line 2091 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 68:
-#line 423 "opl.y" /* yacc.c:1646  */
+#line 426 "opl.y" /* yacc.c:1646  */
     {isFunction = 1;}
-#line 2094 "y.tab.c" /* yacc.c:1646  */
+#line 2097 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 69:
-#line 423 "opl.y" /* yacc.c:1646  */
+#line 426 "opl.y" /* yacc.c:1646  */
     {isFunction = 0; fun.line = yylineno; strcpy(fun.name, (yyvsp[0].strval)); init_variables(&fun.paramTable);}
-#line 2100 "y.tab.c" /* yacc.c:1646  */
+#line 2103 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 70:
-#line 426 "opl.y" /* yacc.c:1646  */
+#line 429 "opl.y" /* yacc.c:1646  */
     {
                         method_was_declared(cl.methTable, fun);
                         insert_function(&cl.methTable, fun);
                         free_variables(&fun.paramTable);
                      }
-#line 2110 "y.tab.c" /* yacc.c:1646  */
+#line 2113 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 73:
-#line 437 "opl.y" /* yacc.c:1646  */
+#line 440 "opl.y" /* yacc.c:1646  */
     {insert_variable(&fun.paramTable, v);}
-#line 2116 "y.tab.c" /* yacc.c:1646  */
+#line 2119 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 74:
-#line 438 "opl.y" /* yacc.c:1646  */
+#line 441 "opl.y" /* yacc.c:1646  */
     {insert_variable(&fun.paramTable, v);}
-#line 2122 "y.tab.c" /* yacc.c:1646  */
+#line 2125 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 443 "opl.y" /* yacc.c:1646  */
+#line 446 "opl.y" /* yacc.c:1646  */
     {
                 if (fun.returnType != valueType)
                 {
@@ -2130,11 +2133,11 @@ yyreduce:
                     noSemanticErrors = 0;
                 }
             }
-#line 2134 "y.tab.c" /* yacc.c:1646  */
+#line 2137 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 78:
-#line 451 "opl.y" /* yacc.c:1646  */
+#line 454 "opl.y" /* yacc.c:1646  */
     {
                 variable_previously_defined((yyvsp[0].strval));
                 check_variable_is_init(listOfVariables, (yyvsp[0].strval));
@@ -2143,26 +2146,27 @@ yyreduce:
                     printf("Invalid return type (line: %d)\n", yylineno);
                     noSemanticErrors = 0;
                 }
+                check_scope(listOfVariables, (yyvsp[0].strval), v.scope);
             }
-#line 2148 "y.tab.c" /* yacc.c:1646  */
+#line 2152 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 79:
-#line 462 "opl.y" /* yacc.c:1646  */
+#line 466 "opl.y" /* yacc.c:1646  */
     {strcat(v.scope, "main#\0");}
-#line 2154 "y.tab.c" /* yacc.c:1646  */
+#line 2158 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 84:
-#line 471 "opl.y" /* yacc.c:1646  */
+#line 475 "opl.y" /* yacc.c:1646  */
     {
             free_variables(&fun.paramTable);
          }
-#line 2162 "y.tab.c" /* yacc.c:1646  */
+#line 2166 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 90:
-#line 482 "opl.y" /* yacc.c:1646  */
+#line 486 "opl.y" /* yacc.c:1646  */
     {
         variable_previously_defined((yyvsp[-2].strval));
         variable_previously_defined((yyvsp[0].strval));
@@ -2174,12 +2178,14 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[-2].strval), v.scope);
+        check_scope(listOfVariables, (yyvsp[0].strval), v.scope);
       }
-#line 2179 "y.tab.c" /* yacc.c:1646  */
+#line 2185 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 91:
-#line 495 "opl.y" /* yacc.c:1646  */
+#line 501 "opl.y" /* yacc.c:1646  */
     {
         variable_previously_defined((yyvsp[0].strval));
         class_variable_previously_defined((yyvsp[-4].strval), (yyvsp[-2].strval));
@@ -2191,12 +2197,13 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[0].strval), v.scope);
       }
-#line 2196 "y.tab.c" /* yacc.c:1646  */
+#line 2203 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 92:
-#line 508 "opl.y" /* yacc.c:1646  */
+#line 515 "opl.y" /* yacc.c:1646  */
     {
         variable_previously_defined((yyvsp[-4].strval));
         class_variable_previously_defined((yyvsp[-2].strval), (yyvsp[0].strval));
@@ -2208,12 +2215,13 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[-4].strval), v.scope);
       }
-#line 2213 "y.tab.c" /* yacc.c:1646  */
+#line 2221 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 93:
-#line 521 "opl.y" /* yacc.c:1646  */
+#line 529 "opl.y" /* yacc.c:1646  */
     {
         class_variable_previously_defined((yyvsp[-6].strval), (yyvsp[-4].strval));
         class_variable_previously_defined((yyvsp[-2].strval), (yyvsp[0].strval));
@@ -2226,11 +2234,11 @@ yyreduce:
             different_types();
         }
       }
-#line 2230 "y.tab.c" /* yacc.c:1646  */
+#line 2238 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 94:
-#line 534 "opl.y" /* yacc.c:1646  */
+#line 542 "opl.y" /* yacc.c:1646  */
     {
         variable_previously_defined((yyvsp[-2].strval));
         set_init_variable(&listOfVariables, (yyvsp[-2].strval));
@@ -2240,12 +2248,13 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[-2].strval), v.scope);
       }
-#line 2245 "y.tab.c" /* yacc.c:1646  */
+#line 2254 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 95:
-#line 545 "opl.y" /* yacc.c:1646  */
+#line 554 "opl.y" /* yacc.c:1646  */
     {
         class_variable_previously_defined((yyvsp[-4].strval), (yyvsp[-2].strval));
         set_init_class_variable(&listOfClasses, (yyvsp[-4].strval), (yyvsp[-2].strval));
@@ -2256,11 +2265,11 @@ yyreduce:
             different_types();
         }
       }
-#line 2260 "y.tab.c" /* yacc.c:1646  */
+#line 2269 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 96:
-#line 556 "opl.y" /* yacc.c:1646  */
+#line 565 "opl.y" /* yacc.c:1646  */
     {
         variable_previously_defined((yyvsp[-2].strval));
         set_init_variable(&listOfVariables, (yyvsp[-2].strval));
@@ -2271,12 +2280,13 @@ yyreduce:
             different_types();
         }
         arithmeticExprType = -2;
+        check_scope(listOfVariables, (yyvsp[-2].strval), v.scope);
       }
-#line 2276 "y.tab.c" /* yacc.c:1646  */
+#line 2286 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 97:
-#line 568 "opl.y" /* yacc.c:1646  */
+#line 578 "opl.y" /* yacc.c:1646  */
     {
         class_variable_previously_defined((yyvsp[-4].strval), (yyvsp[-2].strval));
         set_init_class_variable(&listOfClasses, (yyvsp[-4].strval), (yyvsp[-2].strval));
@@ -2288,11 +2298,11 @@ yyreduce:
         }
         arithmeticExprType = -2;
       }
-#line 2292 "y.tab.c" /* yacc.c:1646  */
+#line 2302 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 98:
-#line 580 "opl.y" /* yacc.c:1646  */
+#line 590 "opl.y" /* yacc.c:1646  */
     {
         check_array_length((yyvsp[-3].intval));
         variable_previously_defined((yyvsp[-5].strval));
@@ -2303,12 +2313,13 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[-5].strval), v.scope);
       }
-#line 2308 "y.tab.c" /* yacc.c:1646  */
+#line 2319 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 99:
-#line 592 "opl.y" /* yacc.c:1646  */
+#line 603 "opl.y" /* yacc.c:1646  */
     {
         check_array_length((yyvsp[-3].intval));
         class_variable_previously_defined((yyvsp[-7].strval), (yyvsp[-5].strval));
@@ -2320,11 +2331,11 @@ yyreduce:
             different_types();
         }
       }
-#line 2324 "y.tab.c" /* yacc.c:1646  */
+#line 2335 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 100:
-#line 604 "opl.y" /* yacc.c:1646  */
+#line 615 "opl.y" /* yacc.c:1646  */
     {
         check_array_length((yyvsp[-3].intval)); 
         variable_previously_defined((yyvsp[-5].strval)); 
@@ -2337,12 +2348,14 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[-5].strval), v.scope);
+        check_scope(listOfVariables, (yyvsp[0].strval), v.scope);
       }
-#line 2342 "y.tab.c" /* yacc.c:1646  */
+#line 2355 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 101:
-#line 618 "opl.y" /* yacc.c:1646  */
+#line 631 "opl.y" /* yacc.c:1646  */
     {
         check_array_length((yyvsp[-3].intval));
         variable_previously_defined((yyvsp[0].strval));
@@ -2355,12 +2368,13 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[0].strval), v.scope);
       }
-#line 2360 "y.tab.c" /* yacc.c:1646  */
+#line 2374 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 102:
-#line 632 "opl.y" /* yacc.c:1646  */
+#line 646 "opl.y" /* yacc.c:1646  */
     {
         check_array_length((yyvsp[-5].intval));
         variable_previously_defined((yyvsp[-7].strval));
@@ -2373,12 +2387,13 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[-7].strval), v.scope);
       }
-#line 2378 "y.tab.c" /* yacc.c:1646  */
+#line 2393 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 103:
-#line 646 "opl.y" /* yacc.c:1646  */
+#line 661 "opl.y" /* yacc.c:1646  */
     {
         check_array_length((yyvsp[-5].intval));
         class_variable_previously_defined((yyvsp[-9].strval), (yyvsp[-7].strval));
@@ -2392,11 +2407,11 @@ yyreduce:
             different_types();
         }
       }
-#line 2396 "y.tab.c" /* yacc.c:1646  */
+#line 2411 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 104:
-#line 660 "opl.y" /* yacc.c:1646  */
+#line 675 "opl.y" /* yacc.c:1646  */
     {
         check_array_length((yyvsp[-6].intval));
         check_array_length((yyvsp[-1].intval));
@@ -2410,12 +2425,14 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[-8].strval), v.scope);
+        check_scope(listOfVariables, (yyvsp[-3].strval), v.scope);
       }
-#line 2415 "y.tab.c" /* yacc.c:1646  */
+#line 2432 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 105:
-#line 675 "opl.y" /* yacc.c:1646  */
+#line 692 "opl.y" /* yacc.c:1646  */
     {
         check_array_length((yyvsp[-8].intval)); 
         check_array_length((yyvsp[-1].intval)); 
@@ -2429,12 +2446,13 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[-10].strval), v.scope);
       }
-#line 2434 "y.tab.c" /* yacc.c:1646  */
+#line 2452 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 106:
-#line 690 "opl.y" /* yacc.c:1646  */
+#line 708 "opl.y" /* yacc.c:1646  */
     {
         check_array_length((yyvsp[-6].intval));
         check_array_length((yyvsp[-1].intval));
@@ -2448,12 +2466,13 @@ yyreduce:
         {
             different_types();
         }
+        check_scope(listOfVariables, (yyvsp[-3].strval), v.scope);
       }
-#line 2453 "y.tab.c" /* yacc.c:1646  */
+#line 2472 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 107:
-#line 705 "opl.y" /* yacc.c:1646  */
+#line 724 "opl.y" /* yacc.c:1646  */
     {
         check_array_length((yyvsp[-8].intval));
         check_array_length((yyvsp[-1].intval));
@@ -2468,17 +2487,17 @@ yyreduce:
             different_types();
         }
       }
-#line 2472 "y.tab.c" /* yacc.c:1646  */
+#line 2491 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 108:
-#line 721 "opl.y" /* yacc.c:1646  */
+#line 740 "opl.y" /* yacc.c:1646  */
     {init_variables(&fun.paramTable);}
-#line 2478 "y.tab.c" /* yacc.c:1646  */
+#line 2497 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 109:
-#line 722 "opl.y" /* yacc.c:1646  */
+#line 741 "opl.y" /* yacc.c:1646  */
     {
         variable_previously_defined((yyvsp[-7].strval));
         function_previously_defined((yyvsp[-4].strval));
@@ -2492,18 +2511,19 @@ yyreduce:
         returnType = type_of_return_function(listOfFunctions, (yyvsp[-4].strval));
         strcpy(fun.name, (yyvsp[-4].strval));
         check_function_signature(listOfFunctions, fun);
+        check_scope(listOfVariables, (yyvsp[-7].strval), v.scope);
     }
-#line 2497 "y.tab.c" /* yacc.c:1646  */
+#line 2517 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 110:
-#line 736 "opl.y" /* yacc.c:1646  */
+#line 756 "opl.y" /* yacc.c:1646  */
     {init_variables(&fun.paramTable);}
-#line 2503 "y.tab.c" /* yacc.c:1646  */
+#line 2523 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 111:
-#line 737 "opl.y" /* yacc.c:1646  */
+#line 757 "opl.y" /* yacc.c:1646  */
     {
         class_variable_previously_defined((yyvsp[-9].strval), (yyvsp[-7].strval));
         function_previously_defined((yyvsp[-4].strval));
@@ -2518,17 +2538,17 @@ yyreduce:
         strcpy(fun.name, (yyvsp[-4].strval));
         check_function_signature(listOfFunctions, fun);
     }
-#line 2522 "y.tab.c" /* yacc.c:1646  */
+#line 2542 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 112:
-#line 751 "opl.y" /* yacc.c:1646  */
+#line 771 "opl.y" /* yacc.c:1646  */
     {init_variables(&fun.paramTable);}
-#line 2528 "y.tab.c" /* yacc.c:1646  */
+#line 2548 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 113:
-#line 752 "opl.y" /* yacc.c:1646  */
+#line 772 "opl.y" /* yacc.c:1646  */
     {
         variable_previously_defined((yyvsp[-9].strval));
         method_previously_defined((yyvsp[-6].strval), (yyvsp[-4].strval));
@@ -2542,18 +2562,19 @@ yyreduce:
         returnType = type_of_return_method(listOfClasses, (yyvsp[-6].strval), (yyvsp[-4].strval));
         strcpy(fun.name, (yyvsp[-4].strval));
         check_method_signature(listOfClasses, (yyvsp[-6].strval), fun);
+        check_scope(listOfVariables, (yyvsp[-9].strval), v.scope);
     }
-#line 2547 "y.tab.c" /* yacc.c:1646  */
+#line 2568 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 114:
-#line 766 "opl.y" /* yacc.c:1646  */
+#line 787 "opl.y" /* yacc.c:1646  */
     {init_variables(&fun.paramTable);}
-#line 2553 "y.tab.c" /* yacc.c:1646  */
+#line 2574 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 115:
-#line 767 "opl.y" /* yacc.c:1646  */
+#line 788 "opl.y" /* yacc.c:1646  */
     {
         class_variable_previously_defined((yyvsp[-11].strval), (yyvsp[-9].strval));
         method_previously_defined((yyvsp[-6].strval), (yyvsp[-4].strval));
@@ -2568,54 +2589,55 @@ yyreduce:
         strcpy(fun.name, (yyvsp[-4].strval));
         check_method_signature(listOfClasses, (yyvsp[-6].strval), fun);
     }
-#line 2572 "y.tab.c" /* yacc.c:1646  */
+#line 2593 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 118:
-#line 787 "opl.y" /* yacc.c:1646  */
+#line 808 "opl.y" /* yacc.c:1646  */
     {insert_variable(&fun.paramTable, v);}
-#line 2578 "y.tab.c" /* yacc.c:1646  */
+#line 2599 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 119:
-#line 788 "opl.y" /* yacc.c:1646  */
+#line 809 "opl.y" /* yacc.c:1646  */
     {insert_variable(&fun.paramTable, v);}
-#line 2584 "y.tab.c" /* yacc.c:1646  */
+#line 2605 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 121:
-#line 792 "opl.y" /* yacc.c:1646  */
+#line 813 "opl.y" /* yacc.c:1646  */
     {
         v.t.mainType = valueType;
         v.t.isArray = 0;
      }
-#line 2593 "y.tab.c" /* yacc.c:1646  */
+#line 2614 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 122:
-#line 797 "opl.y" /* yacc.c:1646  */
+#line 818 "opl.y" /* yacc.c:1646  */
     {
         variable_previously_defined((yyvsp[0].strval));
         check_variable_is_init(listOfVariables, (yyvsp[0].strval));
         v.t.mainType = type_of_variable(listOfVariables, (yyvsp[0].strval));
         v.t.isArray = variable_is_array(listOfVariables, (yyvsp[0].strval));
+        check_scope(listOfVariables, (yyvsp[0].strval), v.scope);
      }
-#line 2604 "y.tab.c" /* yacc.c:1646  */
+#line 2626 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 123:
-#line 804 "opl.y" /* yacc.c:1646  */
+#line 826 "opl.y" /* yacc.c:1646  */
     {
         class_variable_previously_defined((yyvsp[-2].strval), (yyvsp[0].strval));
         check_class_variable_is_init(listOfClasses, (yyvsp[-2].strval), (yyvsp[0].strval));
         v.t.mainType = type_of_class_variable(listOfClasses, (yyvsp[-2].strval), (yyvsp[0].strval));
         v.t.isArray = class_variable_is_array(listOfClasses, (yyvsp[-2].strval), (yyvsp[0].strval));
      }
-#line 2615 "y.tab.c" /* yacc.c:1646  */
+#line 2637 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 126:
-#line 817 "opl.y" /* yacc.c:1646  */
+#line 839 "opl.y" /* yacc.c:1646  */
     {
             if (arithmeticExprType != -1)
             {
@@ -2630,11 +2652,11 @@ yyreduce:
                 }
             }
        }
-#line 2634 "y.tab.c" /* yacc.c:1646  */
+#line 2656 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 127:
-#line 832 "opl.y" /* yacc.c:1646  */
+#line 854 "opl.y" /* yacc.c:1646  */
     {
             variable_previously_defined((yyvsp[0].strval));
             check_variable_is_init(listOfVariables, (yyvsp[0].strval));
@@ -2651,12 +2673,13 @@ yyreduce:
                     arithmeticExprType = -1;
                 }
             }
+            check_scope(listOfVariables, (yyvsp[0].strval), v.scope);
        }
-#line 2656 "y.tab.c" /* yacc.c:1646  */
+#line 2679 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 128:
-#line 850 "opl.y" /* yacc.c:1646  */
+#line 873 "opl.y" /* yacc.c:1646  */
     {
             class_variable_previously_defined((yyvsp[-2].strval), (yyvsp[0].strval));
             check_class_variable_is_init(listOfClasses, (yyvsp[-2].strval), (yyvsp[0].strval));
@@ -2674,11 +2697,11 @@ yyreduce:
                 }
             }
        }
-#line 2678 "y.tab.c" /* yacc.c:1646  */
+#line 2701 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 129:
-#line 868 "opl.y" /* yacc.c:1646  */
+#line 891 "opl.y" /* yacc.c:1646  */
     {
             if (arithmeticExprType != -1)
             {
@@ -2693,134 +2716,134 @@ yyreduce:
                 }
             }
        }
-#line 2697 "y.tab.c" /* yacc.c:1646  */
+#line 2720 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 134:
-#line 890 "opl.y" /* yacc.c:1646  */
+#line 913 "opl.y" /* yacc.c:1646  */
     {strcat(v.scope, "if#\0");}
-#line 2703 "y.tab.c" /* yacc.c:1646  */
+#line 2726 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 135:
-#line 890 "opl.y" /* yacc.c:1646  */
+#line 913 "opl.y" /* yacc.c:1646  */
     {update_scope();}
-#line 2709 "y.tab.c" /* yacc.c:1646  */
+#line 2732 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 137:
-#line 893 "opl.y" /* yacc.c:1646  */
+#line 916 "opl.y" /* yacc.c:1646  */
     {strcat(v.scope, "else#\0");}
-#line 2715 "y.tab.c" /* yacc.c:1646  */
+#line 2738 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 138:
-#line 893 "opl.y" /* yacc.c:1646  */
+#line 916 "opl.y" /* yacc.c:1646  */
     {update_scope();}
-#line 2721 "y.tab.c" /* yacc.c:1646  */
+#line 2744 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 150:
-#line 907 "opl.y" /* yacc.c:1646  */
-    {variable_previously_defined((yyvsp[0].strval)); check_variable_is_init(listOfVariables, (yyvsp[0].strval));}
-#line 2727 "y.tab.c" /* yacc.c:1646  */
+#line 930 "opl.y" /* yacc.c:1646  */
+    {variable_previously_defined((yyvsp[0].strval)); check_variable_is_init(listOfVariables, (yyvsp[0].strval)); check_scope(listOfVariables, (yyvsp[0].strval), v.scope);}
+#line 2750 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 151:
-#line 908 "opl.y" /* yacc.c:1646  */
+#line 931 "opl.y" /* yacc.c:1646  */
     {class_variable_previously_defined((yyvsp[-2].strval), (yyvsp[0].strval)); check_class_variable_is_init(listOfClasses, (yyvsp[-2].strval), (yyvsp[0].strval));}
-#line 2733 "y.tab.c" /* yacc.c:1646  */
+#line 2756 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 152:
-#line 909 "opl.y" /* yacc.c:1646  */
+#line 932 "opl.y" /* yacc.c:1646  */
     {arithmeticExprType = -2;}
-#line 2739 "y.tab.c" /* yacc.c:1646  */
+#line 2762 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 156:
-#line 917 "opl.y" /* yacc.c:1646  */
+#line 940 "opl.y" /* yacc.c:1646  */
     {strcat(v.scope, "while#\0");}
-#line 2745 "y.tab.c" /* yacc.c:1646  */
+#line 2768 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 157:
-#line 917 "opl.y" /* yacc.c:1646  */
+#line 940 "opl.y" /* yacc.c:1646  */
     {update_scope();}
-#line 2751 "y.tab.c" /* yacc.c:1646  */
+#line 2774 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 158:
-#line 920 "opl.y" /* yacc.c:1646  */
+#line 943 "opl.y" /* yacc.c:1646  */
     {strcat(v.scope, "for#\0");}
-#line 2757 "y.tab.c" /* yacc.c:1646  */
+#line 2780 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 159:
-#line 920 "opl.y" /* yacc.c:1646  */
+#line 943 "opl.y" /* yacc.c:1646  */
     {update_scope();}
-#line 2763 "y.tab.c" /* yacc.c:1646  */
+#line 2786 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 163:
-#line 931 "opl.y" /* yacc.c:1646  */
+#line 954 "opl.y" /* yacc.c:1646  */
     {
                 expr.line = yylineno;
                 expr.result = (yyval.expr_ptr)->intvalue;
                 insert_eval(&listOfEval, expr); 
                 free_expr((yyval.expr_ptr));
                }
-#line 2774 "y.tab.c" /* yacc.c:1646  */
+#line 2797 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 164:
-#line 940 "opl.y" /* yacc.c:1646  */
+#line 963 "opl.y" /* yacc.c:1646  */
     { 
                 (yyval.expr_ptr) = create_int_expr((yyvsp[-2].expr_ptr)->intvalue + (yyvsp[0].expr_ptr)->intvalue);
                 free_expr((yyvsp[-2].expr_ptr)); 
                 free_expr((yyvsp[0].expr_ptr));
             }
-#line 2784 "y.tab.c" /* yacc.c:1646  */
+#line 2807 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 165:
-#line 946 "opl.y" /* yacc.c:1646  */
+#line 969 "opl.y" /* yacc.c:1646  */
     { 
                 (yyval.expr_ptr) = create_int_expr((yyvsp[-2].expr_ptr)->intvalue - (yyvsp[0].expr_ptr)->intvalue);
                 free_expr((yyvsp[-2].expr_ptr)); 
                 free_expr((yyvsp[0].expr_ptr));
             }
-#line 2794 "y.tab.c" /* yacc.c:1646  */
+#line 2817 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 166:
-#line 952 "opl.y" /* yacc.c:1646  */
+#line 975 "opl.y" /* yacc.c:1646  */
     { 
                 (yyval.expr_ptr) = create_int_expr((yyvsp[-2].expr_ptr)->intvalue * (yyvsp[0].expr_ptr)->intvalue);
                 free_expr((yyvsp[-2].expr_ptr));
                 free_expr((yyvsp[0].expr_ptr));
             }
-#line 2804 "y.tab.c" /* yacc.c:1646  */
+#line 2827 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 167:
-#line 958 "opl.y" /* yacc.c:1646  */
+#line 981 "opl.y" /* yacc.c:1646  */
     { 
                 (yyval.expr_ptr) = create_int_expr((yyvsp[-2].expr_ptr)->intvalue / (yyvsp[0].expr_ptr)->intvalue);
                 free_expr((yyvsp[-2].expr_ptr));
                 free_expr((yyvsp[0].expr_ptr));
             }
-#line 2814 "y.tab.c" /* yacc.c:1646  */
+#line 2837 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 168:
-#line 963 "opl.y" /* yacc.c:1646  */
+#line 986 "opl.y" /* yacc.c:1646  */
     {(yyval.expr_ptr) = create_int_expr((yyvsp[0].intval));}
-#line 2820 "y.tab.c" /* yacc.c:1646  */
+#line 2843 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 169:
-#line 966 "opl.y" /* yacc.c:1646  */
+#line 989 "opl.y" /* yacc.c:1646  */
     {
                     variable_previously_defined((yyvsp[-2].strval));
                     set_init_variable(&listOfVariables, (yyvsp[-2].strval));
@@ -2830,12 +2853,13 @@ yyreduce:
                     {
                         different_types();
                     }
+                    check_scope(listOfVariables, (yyvsp[-2].strval), v.scope);
                 }
-#line 2835 "y.tab.c" /* yacc.c:1646  */
+#line 2859 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 170:
-#line 977 "opl.y" /* yacc.c:1646  */
+#line 1001 "opl.y" /* yacc.c:1646  */
     {
                     variable_previously_defined((yyvsp[-5].strval));
                     set_init_variable(&listOfVariables, (yyvsp[-5].strval));
@@ -2845,12 +2869,13 @@ yyreduce:
                     {
                         different_types();
                     }
+                    check_scope(listOfVariables, (yyvsp[-5].strval), v.scope);
                 }
-#line 2850 "y.tab.c" /* yacc.c:1646  */
+#line 2875 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 171:
-#line 988 "opl.y" /* yacc.c:1646  */
+#line 1013 "opl.y" /* yacc.c:1646  */
     {
                     variable_previously_defined((yyvsp[-5].strval));
                     set_init_variable(&listOfVariables, (yyvsp[-5].strval));
@@ -2860,12 +2885,13 @@ yyreduce:
                     {
                         different_types();
                     }
+                    check_scope(listOfVariables, (yyvsp[-5].strval), v.scope);
                 }
-#line 2865 "y.tab.c" /* yacc.c:1646  */
+#line 2891 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 172:
-#line 999 "opl.y" /* yacc.c:1646  */
+#line 1025 "opl.y" /* yacc.c:1646  */
     {
                     class_variable_previously_defined((yyvsp[-4].strval), (yyvsp[-2].strval));
                     set_init_class_variable(&listOfClasses, (yyvsp[-4].strval), (yyvsp[-2].strval));
@@ -2876,11 +2902,11 @@ yyreduce:
                         different_types();
                     }
                 }
-#line 2880 "y.tab.c" /* yacc.c:1646  */
+#line 2906 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 173:
-#line 1010 "opl.y" /* yacc.c:1646  */
+#line 1036 "opl.y" /* yacc.c:1646  */
     {
                     class_variable_previously_defined((yyvsp[-7].strval), (yyvsp[-5].strval));
                     set_init_class_variable(&listOfClasses, (yyvsp[-7].strval), (yyvsp[-5].strval));
@@ -2891,11 +2917,11 @@ yyreduce:
                         different_types();
                     }
                 }
-#line 2895 "y.tab.c" /* yacc.c:1646  */
+#line 2921 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 174:
-#line 1021 "opl.y" /* yacc.c:1646  */
+#line 1047 "opl.y" /* yacc.c:1646  */
     {
                     class_variable_previously_defined((yyvsp[-7].strval), (yyvsp[-5].strval));
                     set_init_class_variable(&listOfClasses, (yyvsp[-7].strval), (yyvsp[-5].strval));
@@ -2906,11 +2932,11 @@ yyreduce:
                         different_types();
                     }
                 }
-#line 2910 "y.tab.c" /* yacc.c:1646  */
+#line 2936 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 179:
-#line 1042 "opl.y" /* yacc.c:1646  */
+#line 1068 "opl.y" /* yacc.c:1646  */
     {
                 variable_previously_defined((yyvsp[0].strval));
                 check_variable_is_init(listOfVariables, (yyvsp[0].strval));
@@ -2919,12 +2945,13 @@ yyreduce:
                 {
                     different_types();
                 }
+                check_scope(listOfVariables, (yyvsp[0].strval), v.scope);
               }
-#line 2924 "y.tab.c" /* yacc.c:1646  */
+#line 2951 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 180:
-#line 1052 "opl.y" /* yacc.c:1646  */
+#line 1079 "opl.y" /* yacc.c:1646  */
     {
                 class_variable_previously_defined((yyvsp[-2].strval), (yyvsp[0].strval));
                 check_class_variable_is_init(listOfClasses, (yyvsp[-2].strval), (yyvsp[0].strval));
@@ -2934,11 +2961,11 @@ yyreduce:
                     different_types();
                 }
               }
-#line 2938 "y.tab.c" /* yacc.c:1646  */
+#line 2965 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2942 "y.tab.c" /* yacc.c:1646  */
+#line 2969 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -3166,7 +3193,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 1064 "opl.y" /* yacc.c:1906  */
+#line 1091 "opl.y" /* yacc.c:1906  */
 
 
 expr_info* create_int_expr(int value)
@@ -3679,6 +3706,21 @@ void check_class_variable_is_const(ClassTable arr, char* className, char* id)
     {
         printf("Const variable %s.%s cannot be reassigned (line: %d)\n", className, id, yylineno);
         noSemanticErrors = 0;
+    }
+}
+
+void check_scope(VariableTable arr, char* id, char* currentScope)
+{
+    for (int i = 0; i < arr.varNumber; ++i)
+    {
+        if (strcmp(arr.varTable[i].name, id) == 0)
+        {
+            if (strstr(currentScope, arr.varTable[i].scope) == 0)
+            {
+                printf("Invalid scope for variable %s(line: %d)\n", id, yylineno);
+                noSemanticErrors = 0;
+            }
+        }
     }
 }
 

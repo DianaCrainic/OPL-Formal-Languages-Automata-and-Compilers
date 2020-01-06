@@ -17,6 +17,7 @@ Variables:
 16) name: s2 || scope: global || type: string || init || line: 105
 17) name: zx || scope: global || type: float || init || array of length: 10 || line: 106
 18) name: i || scope: #main#for# || type: integer || init || line: 133
+19) name: alfa || scope: #main#while# || type: integer || init || line: 152
 
 
 ---------------------

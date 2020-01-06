@@ -72,6 +72,7 @@ void free_expr(expr_info* expr);
 void print_expr(expr_info* expr);
 
 //extra
+void check_scope(VariableTable arr, char* id, char* currentScope);
 void check_array_length(int len);
 int variable_is_const(VariableTable arr, char* id);
 int class_variable_is_const(ClassTable arr, char* className, char* id);
@@ -179,6 +180,7 @@ var: ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $3, v.scope);
         v.t.isInit = 1;
         v.line = yylineno;
         v.t.isArray = 0;
@@ -263,6 +265,7 @@ array_element: value
                 {
                     different_types();
                 }
+                check_scope(listOfVariables, $1, v.scope);
              }
              ;
 
@@ -456,6 +459,7 @@ return_value: RET
                     printf("Invalid return type (line: %d)\n", yylineno);
                     noSemanticErrors = 0;
                 }
+                check_scope(listOfVariables, $2, v.scope);
             }
             ;
 
@@ -478,7 +482,7 @@ statement: assign ';'
          | string_statement ';'
          ;
 
-assign: ID '=' ID 
+assign: ID '=' ID
       {
         variable_previously_defined($1);
         variable_previously_defined($3);
@@ -490,6 +494,8 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $1, v.scope);
+        check_scope(listOfVariables, $3, v.scope);
       }
       | ID '.' ID '=' ID 
       {
@@ -503,6 +509,7 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $5, v.scope);
       }
       | ID '=' ID '.' ID
       {
@@ -516,6 +523,7 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $1, v.scope);
       }
       | ID '.' ID '=' ID '.' ID 
       {
@@ -540,6 +548,7 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $1, v.scope);
       }
       | ID '.' ID '=' value 
       {
@@ -563,6 +572,7 @@ assign: ID '=' ID
             different_types();
         }
         arithmeticExprType = -2;
+        check_scope(listOfVariables, $1, v.scope);
       }
       | ID '.' ID '=' arithmetic_expression
       {
@@ -587,6 +597,7 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $1, v.scope);
       }
       | ID '.' ID '[' INTEGER_NUMBER ']' '=' value 
       {
@@ -613,6 +624,8 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $1, v.scope);
+        check_scope(listOfVariables, $6, v.scope);
       }
       | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID 
       {
@@ -627,6 +640,7 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $8, v.scope);
       }
       | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID 
       {
@@ -641,6 +655,7 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $1, v.scope);
       }
       | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID 
       {
@@ -670,6 +685,8 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $1, v.scope);
+        check_scope(listOfVariables, $6, v.scope);
       }
       | ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' 
       {
@@ -685,6 +702,7 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $1, v.scope);
       }
       | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '[' INTEGER_NUMBER ']' 
       {
@@ -700,6 +718,7 @@ assign: ID '=' ID
         {
             different_types();
         }
+        check_scope(listOfVariables, $8, v.scope);
       }
       | ID '.' ID '[' INTEGER_NUMBER ']' '=' ID '.' ID '[' INTEGER_NUMBER ']' 
       {
@@ -732,6 +751,7 @@ call: ID '=' CALL ID {init_variables(&fun.paramTable);} '(' call_param ')'
         returnType = type_of_return_function(listOfFunctions, $4);
         strcpy(fun.name, $4);
         check_function_signature(listOfFunctions, fun);
+        check_scope(listOfVariables, $1, v.scope);
     }
     | ID '.' ID '=' CALL ID {init_variables(&fun.paramTable);} '(' call_param ')' 
     {
@@ -762,6 +782,7 @@ call: ID '=' CALL ID {init_variables(&fun.paramTable);} '(' call_param ')'
         returnType = type_of_return_method(listOfClasses, $4, $6);
         strcpy(fun.name, $6);
         check_method_signature(listOfClasses, $4, fun);
+        check_scope(listOfVariables, $1, v.scope);
     }
     | ID '.' ID '=' CALL ID '.' ID {init_variables(&fun.paramTable);} '(' call_param ')'
     {
@@ -799,6 +820,7 @@ param: value
         check_variable_is_init(listOfVariables, $1);
         v.t.mainType = type_of_variable(listOfVariables, $1);
         v.t.isArray = variable_is_array(listOfVariables, $1);
+        check_scope(listOfVariables, $1, v.scope);
      }
      | ID '.' ID 
      {
@@ -845,6 +867,7 @@ operand: value
                     arithmeticExprType = -1;
                 }
             }
+            check_scope(listOfVariables, $1, v.scope);
        }
        | ID '.' ID 
        {
@@ -904,7 +927,7 @@ condition: condition '<' condition
          | condition AND condition
          | '(' call ')'
          | value
-         | ID {variable_previously_defined($1); check_variable_is_init(listOfVariables, $1);}
+         | ID {variable_previously_defined($1); check_variable_is_init(listOfVariables, $1); check_scope(listOfVariables, $1, v.scope);}
          | ID '.' ID {class_variable_previously_defined($1, $3); check_class_variable_is_init(listOfClasses, $1, $3);}
          | arithmetic_expression {arithmeticExprType = -2;}
          ;
@@ -972,6 +995,7 @@ string_statement: ID '=' string_function
                     {
                         different_types();
                     }
+                    check_scope(listOfVariables, $1, v.scope);
                 }
                 | ID '=' LENGTH '(' string_content')'
                 {
@@ -983,6 +1007,7 @@ string_statement: ID '=' string_function
                     {
                         different_types();
                     }
+                    check_scope(listOfVariables, $1, v.scope);
                 }
                 | ID '=' COMPARE '(' strings_content ')'
                 {
@@ -994,6 +1019,7 @@ string_statement: ID '=' string_function
                     {
                         different_types();
                     }
+                    check_scope(listOfVariables, $1, v.scope);
                 }
                 | ID '.' ID '=' string_function
                 {
@@ -1047,6 +1073,7 @@ string_content: ID
                 {
                     different_types();
                 }
+                check_scope(listOfVariables, $1, v.scope);
               }
               | ID '.' ID 
               {
@@ -1573,6 +1600,21 @@ void check_class_variable_is_const(ClassTable arr, char* className, char* id)
     {
         printf("Const variable %s.%s cannot be reassigned (line: %d)\n", className, id, yylineno);
         noSemanticErrors = 0;
+    }
+}
+
+void check_scope(VariableTable arr, char* id, char* currentScope)
+{
+    for (int i = 0; i < arr.varNumber; ++i)
+    {
+        if (strcmp(arr.varTable[i].name, id) == 0)
+        {
+            if (strstr(currentScope, arr.varTable[i].scope) == 0)
+            {
+                printf("Invalid scope for variable %s(line: %d)\n", id, yylineno);
+                noSemanticErrors = 0;
+            }
+        }
     }
 }
 
